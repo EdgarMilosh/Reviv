@@ -1,0 +1,140 @@
+.upload-page {
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 8px 0 40px;
+}
+
+.upload-page h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 32px;
+    color: #111827;
+}
+
+.upload-dropzone {
+    min-height: 260px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    background: #f8fafc;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 32px;
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.upload-dropzone:hover {
+    border-color: #168b87;
+    background: #f0fdfa;
+}
+
+.upload-dropzone strong {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.upload-dropzone p {
+    color: #64748b;
+    font-size: 14px;
+    margin: 14px 0;
+}
+
+.upload-dropzone button {
+    background: white;
+    color: #087f7a;
+    border: 1.5px solid #168b87;
+    border-radius: 6px;
+
+    padding: 11px 28px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.upload-dropzone button:hover:not(:disabled) {
+    background: #ccfbf1;
+}
+
+.upload-dropzone button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.upload-file {
+    margin-top: 28px;
+    padding: 16px 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #111827;
+}
+
+.upload-file span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.upload-file button {
+    padding: 9px 22px;
+    border: none;
+    border-radius: 6px;
+    background: #2664e2;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.upload-file button:hover:not(:disabled) {
+    background: #2664e2;
+}
+
+.upload-file button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.upload-success {
+    background: #25803b;
+    color: white;
+    padding: 7px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.upload-error {
+    margin-top: 18px;
+    color: #dc2626;
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+    .upload-page h1 {
+        font-size: 24px;
+    }
+
+    .upload-dropzone {
+        min-height: 230px;
+        padding: 24px 16px;
+    }
+
+    .upload-file {
+        flex-wrap: wrap;
+    }
+}
