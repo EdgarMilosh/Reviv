@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { useAuth } from '../auth/auth-Context'
+import { useAuth } from '../auth/UseAuth'
 import type { Role } from '../types'
 
 interface MenuItem {

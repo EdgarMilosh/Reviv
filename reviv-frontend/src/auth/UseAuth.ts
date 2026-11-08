@@ -12,10 +12,10 @@ export interface AuthState {
     logout: () => void
 }
 
-export const AuthContext = createContext<AuthState | null>(null)
+export const UseAuth = createContext<AuthState | null>(null)
 
 export function useAuth() {
-    const ctx = useContext(AuthContext)
+    const ctx = useContext(UseAuth)
     if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
     return ctx
 }

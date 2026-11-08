@@ -7,7 +7,7 @@ import {
 import axios from 'axios'
 import { api } from '../api'
 import type { GoogleProfile, User } from '../types'
-import { AuthContext, type AuthStatus } from './auth-Context'
+import { UseAuth, type AuthStatus } from './UseAuth'
 
 // Decodes the Google ID token payload (signature is verified by the backend)
 function decodeJwt(token: string): (GoogleProfile & { exp?: number }) | null {
@@ -107,10 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider
+        <UseAuth.Provider
             value={{ status, user, profile, loginWithGoogle, acceptConsent, logout: clear }}
         >
             {children}
-        </AuthContext.Provider>
+        </UseAuth.Provider>
     )
 }

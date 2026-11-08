@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../auth/auth-Context'
+import { useAuth } from '../auth/UseAuth'
 // Pakeiskite į tikrą kontaktinį adresą, kuriuo naudotojai gali kreiptis dėl savo duomenų
 const Contact = 'reviv@example.com'
 
