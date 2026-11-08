@@ -47,6 +47,8 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
 
+    //pdf
+    implementation 'org.apache.pdfbox:pdfbox:3.0.8'
 }
 
 tasks.named('test') {
@@ -57,3 +59,5 @@ tasks.named('test') {
 jacocoTestReport {
     reports { html.required = true }
 }
+
+apply from: 'jacoco-us3.gradle'

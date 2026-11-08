@@ -1,0 +1,39 @@
+import org.gradle.testing.jacoco.tasks.JacocoReport
+import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
+
+// Create an additional report for US-3 without changing the team's existing JaCoCo report.
+def us3Classes = {
+    files(sourceSets.main.output.classesDirs.files.collect { classesDir ->
+        fileTree(dir: classesDir, includes: ['lt/reviv/bloodtests/**/*.class'])
+    })
+}
+
+tasks.register('jacocoUs3TestReport', JacocoReport) {
+    dependsOn tasks.named('test')
+    executionData(tasks.named('test').get())
+    sourceDirectories.from(files('src/main/java'))
+    classDirectories.from(us3Classes())
+    reports {
+        html.required = true
+        html.outputLocation = layout.buildDirectory.dir('reports/jacoco/us3/html')
+        xml.required = true
+        xml.outputLocation = layout.buildDirectory.file('reports/jacoco/us3/jacoco.xml')
+    }
+}
+
+tasks.register('jacocoUs3CoverageVerification', JacocoCoverageVerification) {
+    dependsOn tasks.named('test')
+    executionData(tasks.named('test').get())
+    sourceDirectories.from(files('src/main/java'))
+    classDirectories.from(us3Classes())
+    violationRules {
+        rule {
+            element = 'BUNDLE'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.81 // Ensures more than 80% of US-3 lines covered.
+            }
+        }
+    }
+}
