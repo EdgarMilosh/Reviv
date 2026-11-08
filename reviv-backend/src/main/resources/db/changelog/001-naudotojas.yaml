@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-naudotojas
+      author: reviv
+      changes:
+        - createTable:
+            tableName: naudotojas
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: google_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_naudotojas_google_id
+              - column:
+                  name: el_pastas
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: vardas
+                  type: VARCHAR(255)
+              - column:
+                  name: role
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sutikimo_data
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sukurta
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: ALTER TABLE naudotojas ADD CONSTRAINT ck_naudotojas_role CHECK (role IN ('NAUDOTOJAS', 'ADMINISTRATORIUS'))
