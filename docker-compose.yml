@@ -30,6 +30,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME:-reviv}
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-reviv}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-reviv}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
     depends_on:
       db:
         condition: service_healthy
@@ -42,6 +45,9 @@ services:
     restart: unless-stopped
     ports:
       - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8080
+      VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
 
 volumes:
   db-data:
