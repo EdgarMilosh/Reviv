@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { useAuth } from '../auth/AuthContext'
+import { useAuth } from '../auth/auth-Context'
 import type { Role } from '../types'
 
 interface MenuItem {
@@ -11,7 +11,7 @@ interface MenuItem {
 const ALL: Role[] = ['USER', 'ADMIN']
 
 // Čia valdoma, kas ką mato. Pridėti naują punktą = pridėti eilutę.
-export const MENU: MenuItem[] = [
+const MENU: MenuItem[] = [
     { to: '/', label: 'Pradžia', roles: ALL },
     { to: '/reports', label: 'Ataskaitos', roles: ['ADMIN'] },
     { to: '/users', label: 'Naudotojai', roles: ['ADMIN'] },

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
-import { useAuth } from '../auth/AuthContext'
+import { useAuth } from '../auth/auth-Context'
+
 
 export default function LoginPage() {
   const { status, loginWithGoogle } = useAuth()
