@@ -1,7 +1,5 @@
 import {
-    createContext,
     useCallback,
-    useContext,
     useEffect,
     useState,
     type ReactNode,
@@ -9,19 +7,7 @@ import {
 import axios from 'axios'
 import { api } from '../api'
 import type { GoogleProfile, User } from '../types'
-
-export type AuthStatus = 'loading' | 'anonymous' | 'unregistered' | 'registered'
-
-interface AuthState {
-    status: AuthStatus
-    user: User | null // set only when status = 'registered'
-    profile: GoogleProfile | null // name, email, picture from Google
-    loginWithGoogle: (credential: string) => Promise<AuthStatus>
-    acceptConsent: () => Promise<void>
-    logout: () => void
-}
-
-const AuthContext = createContext<AuthState | null>(null)
+import { UseAuth, type AuthStatus } from './UseAuth'
 
 // Decodes the Google ID token payload (signature is verified by the backend)
 function decodeJwt(token: string): (GoogleProfile & { exp?: number }) | null {
@@ -40,7 +26,10 @@ function decodeJwt(token: string): (GoogleProfile & { exp?: number }) | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [status, setStatus] = useState<AuthStatus>('loading')
+    // No token means anonymous right away, so no setState is needed in the effect
+    const [status, setStatus] = useState<AuthStatus>(() =>
+        localStorage.getItem('token') ? 'loading' : 'anonymous',
+    )
     const [user, setUser] = useState<User | null>(null)
     const [profile, setProfile] = useState<GoogleProfile | null>(null)
 
@@ -84,11 +73,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // On page load, restore the session if a token exists
     useEffect(() => {
         const token = localStorage.getItem('token')
-        if (!token) {
-            setStatus('anonymous')
-            return
+        if (!token) return
+
+        let cancelled = false
+        const restore = async () => {
+            try {
+                await resolve(token)
+            } catch {
+                if (!cancelled) clear()
+            }
         }
-        resolve(token).catch(clear)
+        void restore()
+
+        return () => {
+            cancelled = true
+        }
     }, [resolve, clear])
 
     const loginWithGoogle = async (credential: string) => {
@@ -108,16 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider
+        <UseAuth.Provider
             value={{ status, user, profile, loginWithGoogle, acceptConsent, logout: clear }}
         >
             {children}
-        </AuthContext.Provider>
+        </UseAuth.Provider>
     )
-}
-
-export function useAuth() {
-    const ctx = useContext(AuthContext)
-    if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
-    return ctx
 }

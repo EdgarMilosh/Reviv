@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
-import { useAuth } from './AuthContext'
+import { useAuth } from './UseAuth'
 import type { Role } from '../types'
 
 // Reikia būti prisijungusiam IR užregistruotam (+ pasirinktinai rolė)
