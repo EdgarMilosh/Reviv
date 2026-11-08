@@ -2,40 +2,46 @@
 services:
   db:
     image: postgres:16
+    container_name: reviv-db
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: reviv
-      POSTGRES_USER: reviv
-      POSTGRES_PASSWORD: reviv
+      POSTGRES_DB: ${DB_NAME:-reviv}
+      POSTGRES_USER: ${DB_USER:-reviv}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-reviv}
     ports:
       - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-reviv} -d ${DB_NAME:-reviv}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
-    image: gradle:8.14-jdk21
-    working_dir: /app
-    command: ["gradle", "bootRun", "--no-daemon"]
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/reviv
-      SPRING_DATASOURCE_USERNAME: reviv
-      SPRING_DATASOURCE_PASSWORD: reviv
-    volumes:
-      - ./reviv-backend:/app
+    build:
+      context: ./reviv-backend
+      dockerfile: Dockerfile
+    container_name: reviv-backend
+    restart: unless-stopped
     ports:
       - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME:-reviv}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-reviv}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-reviv}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
-    image: node:22-alpine
-    working_dir: /app
-    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0 --port 5173"
-    volumes:
-      - ./reviv-frontend:/app
+    build:
+      context: ./reviv-frontend
+      dockerfile: Dockerfile
+    container_name: reviv-frontend
+    restart: unless-stopped
     ports:
       - "5173:5173"
-    depends_on:
-      - db
 
 volumes:
   db-data:

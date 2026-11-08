@@ -16,3 +16,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Environment variables ###
+.env
+.env.*
+!.env.example
