@@ -1,6 +1,6 @@
-package lt.reviv.bendra.saugumas;
+package lt.reviv.common.security;
 
-import lt.reviv.naudotojai.repository.NaudotojasRepository;
+import lt.reviv.users.repository.AppUserRepository;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,22 +12,22 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * Pagal Google ID (sub) randa naudotoją duomenų bazėje ir suteikia jo rolę.
- * Neužsiregistravęs naudotojas rolės negauna – jam leidžiama tik užsiregistruoti.
+ * Finds the user in the database by Google ID (sub) and grants their role.
+ * An unregistered user gets no role and may only register.
  */
 @Component
-public class GoogleRoliuKonverteris implements Converter<Jwt, AbstractAuthenticationToken> {
+public class GoogleRoleConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
-    private final NaudotojasRepository repository;
+    private final AppUserRepository repository;
 
-    public GoogleRoliuKonverteris(NaudotojasRepository repository) {
+    public GoogleRoleConverter(AppUserRepository repository) {
         this.repository = repository;
     }
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
         List<GrantedAuthority> roles = repository.findByGoogleId(jwt.getSubject())
-                .<GrantedAuthority>map(n -> new SimpleGrantedAuthority("ROLE_" + n.getRole().name()))
+                .<GrantedAuthority>map(user -> new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
                 .map(List::of)
                 .orElse(List.of());
         return new JwtAuthenticationToken(jwt, roles, jwt.getSubject());

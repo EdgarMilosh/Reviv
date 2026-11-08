@@ -1,10 +1,10 @@
 databaseChangeLog:
   - changeSet:
-      id: 001-naudotojas
+      id: 001-app-user
       author: reviv
       changes:
         - createTable:
-            tableName: naudotojas
+            tableName: app_user
             columns:
               - column:
                   name: id
@@ -19,14 +19,14 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     unique: true
-                    uniqueConstraintName: uk_naudotojas_google_id
+                    uniqueConstraintName: uk_app_user_google_id
               - column:
-                  name: el_pastas
+                  name: email
                   type: VARCHAR(255)
                   constraints:
                     nullable: false
               - column:
-                  name: vardas
+                  name: name
                   type: VARCHAR(255)
               - column:
                   name: role
@@ -34,14 +34,14 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: sutikimo_data
+                  name: consent_date
                   type: TIMESTAMP WITH TIME ZONE
                   constraints:
                     nullable: false
               - column:
-                  name: sukurta
+                  name: created_at
                   type: TIMESTAMP WITH TIME ZONE
                   constraints:
                     nullable: false
         - sql:
-            sql: ALTER TABLE naudotojas ADD CONSTRAINT ck_naudotojas_role CHECK (role IN ('NAUDOTOJAS', 'ADMINISTRATORIUS'))
+            sql: ALTER TABLE app_user ADD CONSTRAINT ck_app_user_role CHECK (role IN ('USER', 'ADMIN'))
