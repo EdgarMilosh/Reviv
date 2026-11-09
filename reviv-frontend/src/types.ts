@@ -12,3 +12,11 @@ export interface GoogleProfile {
     name?: string
     picture?: string
 }
+
+export interface ProfileData {
+    heightCm?: number | null
+    weightKg?: number | null
+    harmfulHabits?: string[]
+    allergies?: string[]
+    updatedAt?: string
+}

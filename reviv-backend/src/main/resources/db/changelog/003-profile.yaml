@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-profile
+      author: reviv
+      changes:
+        - createTable:
+            tableName: profile
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: height_cm
+                  type: INTEGER
+              - column:
+                  name: birth_date
+                  type: DATE
+              - column:
+                  name: weight_kg
+                  type: DECIMAL(5,2)
+              - column:
+                  name: harmful_habits
+                  type: TEXT[]
+              - column:
+                  name: allergies
+                  type: TEXT[]
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: profile
+            baseColumnNames: user_id
+            referencedTableName: app_user
+            referencedColumnNames: id
+            constraintName: fk_profile_user
+            onDelete: CASCADE
+        - createIndex:
+            tableName: profile
+            indexName: idx_profile_user
+            columns:
+              - column:
+                  name: user_id

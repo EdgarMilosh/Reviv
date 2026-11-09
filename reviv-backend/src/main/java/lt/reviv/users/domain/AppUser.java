@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lt.reviv.profile.domain.Profile;
 
 import java.time.OffsetDateTime;
 
@@ -35,6 +36,9 @@ public class AppUser {
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Profile profile;
 
     public AppUser(String googleId, String email, String name, UserRole role) {
         this.googleId = googleId;
