@@ -56,8 +56,14 @@ tasks.named('test') {
     finalizedBy tasks.named('jacocoTestReport')
 }
 
+def jacocoExcludes = ['**/RevivApplication.class']
+
 jacocoTestReport {
     dependsOn tasks.named('test')
+
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: jacocoExcludes)
+    }))
 
     reports {
         html.required = true
@@ -69,12 +75,23 @@ jacocoTestReport {
 jacocoTestCoverageVerification {
     dependsOn tasks.named('test')
 
+    classDirectories.setFrom(files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: jacocoExcludes)
+    }))
+
     violationRules {
         rule {
             limit {
                 counter = 'LINE'
                 value = 'COVEREDRATIO'
-                minimum = 0.0
+                minimum = 0.80
+            }
+        }
+        rule {
+            limit {
+                counter = 'INSTRUCTION'
+                value = 'COVEREDRATIO'
+                minimum = 0.80
             }
         }
     }

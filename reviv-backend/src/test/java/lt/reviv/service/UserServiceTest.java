@@ -50,7 +50,15 @@ class UserServiceTest {
     }
 
     @Test
-    void registerCreatesUserWithUserRoleAndLowercaseEmail() {   // TA-02
+    void TA01_currentThrowsWhenUserIsNotRegisteredYet() {
+        when(repository.findByGoogleId("google-new")).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class,
+                () -> service.current(jwt("google-new", "naujas@gmail.com", "Naujas")));
+    }
+
+    @Test
+    void TA02_registerCreatesUserWithUserRoleAndLowercaseEmail() {
         when(repository.findByGoogleId("google-1")).thenReturn(Optional.empty());
         when(repository.save(any(AppUser.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -69,7 +77,7 @@ class UserServiceTest {
     }
 
     @Test
-    void registerGivesAdminRoleToEmailFromAdminList() {   // TA-04
+    void TA04_registerGivesAdminRoleToEmailFromAdminList() {
         when(repository.findByGoogleId("google-2")).thenReturn(Optional.empty());
         when(repository.save(any(AppUser.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -79,7 +87,7 @@ class UserServiceTest {
     }
 
     @Test
-    void registerTwiceDoesNotCreateSecondAccount() {   // TA-05
+    void TA05_registerTwiceDoesNotCreateSecondAccount() {
         AppUser existing = new AppUser("google-1", "jonas@gmail.com", "Jonas", UserRole.USER);
         when(repository.findByGoogleId("google-1")).thenReturn(Optional.of(existing));
 
@@ -91,7 +99,7 @@ class UserServiceTest {
     }
 
     @Test
-    void currentReturnsRegisteredUser() {   // TA-06
+    void TA06_currentReturnsRegisteredUser() {
         AppUser existing = new AppUser("google-1", "jonas@gmail.com", "Jonas", UserRole.USER);
         when(repository.findByGoogleId("google-1")).thenReturn(Optional.of(existing));
 
@@ -102,7 +110,7 @@ class UserServiceTest {
     }
 
     @Test
-    void currentRefreshesEmailAndNameChangedInGoogleAccount() {   // TA-07
+    void TA07_currentRefreshesEmailAndNameChangedInGoogleAccount() {
         AppUser existing = new AppUser("google-1", "senas@gmail.com", "Senas Vardas", UserRole.USER);
         when(repository.findByGoogleId("google-1")).thenReturn(Optional.of(existing));
 
@@ -112,13 +120,5 @@ class UserServiceTest {
         assertEquals("Naujas Vardas", existing.getName());
         assertEquals("naujas@gmail.com", info.email());
         assertEquals("Naujas Vardas", info.name());
-    }
-
-    @Test
-    void currentThrowsWhenUserIsNotRegisteredYet() {   // TA-01
-        when(repository.findByGoogleId("google-new")).thenReturn(Optional.empty());
-
-        assertThrows(UserNotFoundException.class,
-                () -> service.current(jwt("google-new", "naujas@gmail.com", "Naujas")));
     }
 }

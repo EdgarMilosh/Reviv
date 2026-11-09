@@ -23,16 +23,16 @@ class RegistrationRequestTest {
     }
 
     @Test
-    void requestWithoutConsentIsRejected() {   // TA-03
+    void TA02_requestWithConsentIsAccepted() {
+        assertTrue(validator.validate(new RegistrationRequest(true)).isEmpty());
+    }
+
+    @Test
+    void TA03_requestWithoutConsentIsRejected() {
         Set<ConstraintViolation<RegistrationRequest>> violations =
                 validator.validate(new RegistrationRequest(false));
 
         assertEquals(1, violations.size());
         assertEquals("consent", violations.iterator().next().getPropertyPath().toString());
-    }
-
-    @Test
-    void requestWithConsentIsAccepted() {
-        assertTrue(validator.validate(new RegistrationRequest(true)).isEmpty());
     }
 }

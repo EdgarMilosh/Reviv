@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+/** US-3: kraujo tyrimo PDF įkėlimas (DP6 - Tyrimų valdymo komponentas). */
 @ExtendWith(MockitoExtension.class)
 class BloodTestServiceTest {
 
@@ -105,7 +106,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void savesValidPdfWithFullBytesAndExpectedMetadata() throws Exception {
+    void TA15_savesValidPdfWithFullBytesAndExpectedMetadata() throws Exception {
         registeredUser();
         byte[] bytes = validPdf();
         when(bloodTestRepository.save(any(BloodTest.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -125,7 +126,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void acceptsValidPdfAtOrdinarySize() throws Exception {
+    void TA16_acceptsValidPdfAtOrdinarySize() throws Exception {
         registeredUser();
         byte[] bytes = validPdf();
         when(bloodTestRepository.save(any(BloodTest.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -133,14 +134,14 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void rejectsNullFile() {
+    void TA17_rejectsNullFile() {
         registeredUser();
         uploadError(() -> service.upload(null, jwt, false), HttpStatus.BAD_REQUEST);
         verifyNoInteractions(bloodTestRepository);
     }
 
     @Test
-    void rejectsEmptyFile() {
+    void TA17_rejectsEmptyFile() {
         registeredUser();
         uploadError(() -> service.upload(pdfFile("empty.pdf", new byte[0]), jwt, false),
                 HttpStatus.BAD_REQUEST);
@@ -148,7 +149,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void rejectsFileLargerThanTenMiB() {
+    void TA18_rejectsFileLargerThanTenMiB() {
         registeredUser();
         MultipartFile file = mock(MultipartFile.class);
         when(file.getSize()).thenReturn(MAX_SIZE_BYTES + 1);
@@ -160,7 +161,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void rejectsNonPdfExtensionEvenWhenContentsAreValid() throws Exception {
+    void TA19_rejectsNonPdfExtensionEvenWhenContentsAreValid() throws Exception {
         registeredUser();
         byte[] bytes = validPdf();
         uploadError(() -> service.upload(pdfFile("tyrimas.txt", bytes), jwt, false),
@@ -169,7 +170,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void rejectsNullOriginalFilename() {
+    void TA19_rejectsNullOriginalFilename() {
         registeredUser();
         MultipartFile file = mock(MultipartFile.class);
         when(file.getOriginalFilename()).thenReturn(null);
@@ -178,7 +179,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void rejectsFilenameLongerThan255Characters() throws Exception {
+    void TA20_rejectsFilenameLongerThan255Characters() throws Exception {
         registeredUser();
         String tooLong = "a".repeat(252) + ".pdf";
         byte[] bytes = validPdf();
@@ -188,7 +189,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void stripsDirectoryPathFromUploadedFilename() throws Exception {
+    void TA20_stripsDirectoryPathFromUploadedFilename() throws Exception {
         registeredUser();
         byte[] bytes = validPdf();
         when(bloodTestRepository.save(any(BloodTest.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -199,7 +200,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void rejectsTextRenamedToPdf() {
+    void TA21_rejectsTextRenamedToPdf() {
         registeredUser();
         byte[] bytes = "this-is-not-a-pdf".getBytes(StandardCharsets.UTF_8);
         uploadError(() -> service.upload(pdfFile("fake.pdf", bytes), jwt, false),
@@ -208,7 +209,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void rejectsTruncatedCorruptPdf() {
+    void TA21_rejectsTruncatedCorruptPdf() {
         registeredUser();
         byte[] bytes = "%PDF-1.7\ntruncated corrupted document".getBytes(StandardCharsets.UTF_8);
         uploadError(() -> service.upload(pdfFile("corrupt.pdf", bytes), jwt, false),
@@ -217,7 +218,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void rejectsPdfWithoutPages() throws Exception {
+    void TA22_rejectsPdfWithoutPages() throws Exception {
         registeredUser();
         byte[] bytes = emptyPagesPdf();
         uploadError(() -> service.upload(pdfFile("no-pages.pdf", bytes), jwt, false),
@@ -226,7 +227,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void rejectsPasswordProtectedPdf() throws Exception {
+    void TA23_rejectsPasswordProtectedPdf() throws Exception {
         registeredUser();
         byte[] bytes = passwordProtectedPdf();
         ResponseStatusException error = uploadError(
@@ -237,7 +238,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void handlesFailureToReadFileBytes() throws Exception {
+    void TA24_handlesFailureToReadFileBytes() throws Exception {
         registeredUser();
         MultipartFile file = mock(MultipartFile.class);
         when(file.getOriginalFilename()).thenReturn("tyrimas.pdf");
@@ -250,7 +251,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void rejectsDuplicateWhenNotApproved() throws Exception {
+    void TA25_rejectsDuplicateWhenNotApproved() throws Exception {
         registeredUser();
         byte[] bytes = validPdf();
         when(bloodTestRepository.existsByUserIdAndFileSha256(eq(USER_ID), anyString()))
@@ -263,7 +264,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void allowsApprovedDuplicateAndSavesNewRecord() throws Exception {
+    void TA26_allowsApprovedDuplicateAndSavesNewRecord() throws Exception {
         registeredUser();
         byte[] bytes = validPdf();
         when(bloodTestRepository.existsByUserIdAndFileSha256(eq(USER_ID), anyString()))
@@ -277,7 +278,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void rejectsUploadWhenJwtUserDoesNotExist() throws Exception {
+    void TA27_rejectsUploadWhenJwtUserDoesNotExist() throws Exception {
         when(appUserRepository.findByGoogleId("google-123")).thenReturn(Optional.empty());
         byte[] bytes = validPdf();
         assertThrows(UserNotFoundException.class,
@@ -285,9 +286,8 @@ class BloodTestServiceTest {
         verifyNoInteractions(bloodTestRepository);
     }
 
-
     @Test
-    void rejectsPdfWithTooShortHeader() {
+    void TA21_rejectsPdfWithTooShortHeader() {
         registeredUser();
 
         byte[] bytes = "%PDF".getBytes(StandardCharsets.US_ASCII);
@@ -301,7 +301,7 @@ class BloodTestServiceTest {
     }
 
     @Test
-    void rejectsPdfWithInvalidHeaderBytes() {
+    void TA21_rejectsPdfWithInvalidHeaderBytes() {
         registeredUser();
 
         String[] invalidHeaders = {

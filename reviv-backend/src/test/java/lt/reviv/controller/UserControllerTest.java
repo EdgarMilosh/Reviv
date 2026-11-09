@@ -38,21 +38,21 @@ class UserControllerTest {
     }
 
     @Test
-    void meReturnsCurrentUserFromService() {
-        Jwt jwt = jwt();
-        UserInfo info = info();
-        when(service.current(jwt)).thenReturn(info);
-
-        assertSame(info, controller.me(jwt));
-    }
-
-    @Test
-    void registerDelegatesToService() {
+    void TA02_registerDelegatesToService() {
         Jwt jwt = jwt();
         UserInfo info = info();
         when(service.register(jwt)).thenReturn(info);
 
         assertSame(info, controller.register(jwt, new RegistrationRequest(true)));
         verify(service).register(jwt);
+    }
+
+    @Test
+    void TA06_meReturnsCurrentUserFromService() {
+        Jwt jwt = jwt();
+        UserInfo info = info();
+        when(service.current(jwt)).thenReturn(info);
+
+        assertSame(info, controller.me(jwt));
     }
 }

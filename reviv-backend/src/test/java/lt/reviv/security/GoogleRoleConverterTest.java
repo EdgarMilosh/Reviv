@@ -41,7 +41,15 @@ class GoogleRoleConverterTest {
     }
 
     @Test
-    void registeredUserGetsRoleUser() {
+    void TA04_adminGetsRoleAdmin() {
+        when(repository.findByGoogleId("google-1"))
+                .thenReturn(Optional.of(new AppUser("google-1", "a@gmail.com", "A", UserRole.ADMIN)));
+
+        assertEquals(List.of("ROLE_ADMIN"), roles(converter.convert(jwt())));
+    }
+
+    @Test
+    void TA06_registeredUserGetsRoleUser() {
         when(repository.findByGoogleId("google-1"))
                 .thenReturn(Optional.of(new AppUser("google-1", "a@gmail.com", "A", UserRole.USER)));
 
@@ -52,15 +60,7 @@ class GoogleRoleConverterTest {
     }
 
     @Test
-    void adminGetsRoleAdmin() {
-        when(repository.findByGoogleId("google-1"))
-                .thenReturn(Optional.of(new AppUser("google-1", "a@gmail.com", "A", UserRole.ADMIN)));
-
-        assertEquals(List.of("ROLE_ADMIN"), roles(converter.convert(jwt())));
-    }
-
-    @Test
-    void unregisteredUserGetsNoRoles() {   // TA-09
+    void TA09_unregisteredUserGetsNoRoles() {
         when(repository.findByGoogleId("google-1")).thenReturn(Optional.empty());
 
         AbstractAuthenticationToken token = converter.convert(jwt());

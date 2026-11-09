@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/** US-3: DP2 - Tyrimų kontrolerio komponentas. */
 @ExtendWith(MockitoExtension.class)
 class BloodTestControllerTest {
 
@@ -44,7 +45,7 @@ class BloodTestControllerTest {
     }
 
     @Test
-    void returnsCreatedAndOnlySafeMetadata() {
+    void TA15_returnsCreatedAndOnlySafeMetadata() {
         MockMultipartFile file = new MockMultipartFile("file", "tyrimas.pdf",
                 "application/pdf", new byte[] { 1, 2, 3 });
         Jwt jwt = jwt();
@@ -66,7 +67,7 @@ class BloodTestControllerTest {
     }
 
     @Test
-    void forwardsDuplicateConfirmationToService() {
+    void TA26_forwardsDuplicateConfirmationToService() {
         MockMultipartFile file = new MockMultipartFile("file", "tyrimas.pdf",
                 "application/pdf", new byte[] { 1, 2, 3 });
         Jwt jwt = jwt();
