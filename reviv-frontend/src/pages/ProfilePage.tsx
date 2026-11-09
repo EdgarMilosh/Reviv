@@ -6,11 +6,11 @@ import './ProfilePage.css'
 
 const HARMFUL_HABITS = [
     'Rūkymas',
-    'Alkoholis',
+    'Alkoholio vartojimas',
     'Kofeinas',
     'Stresas',
     'Sėdimas gyvenimo būdas',
-    'Per didelis ekrano laikas',
+    'Per didelis ekrano naudojimas',
 ]
 
 type ProfileResponse = {
@@ -181,18 +181,14 @@ export default function ProfilePage() {
         }
     }
 
-    const emailLabel = profile?.email || user?.email || 'Nežinomas el. paštas'
+    const displayName = user?.name || profile?.name || 'Naudotojas'
 
     return (
         <div className="profile-page">
             <div className="profile-header">
                 <div>
                     <p className="eyebrow">Mano profilis</p>
-                    <h1>{emailLabel}</h1>
-                </div>
-                <div className="profile-status">
-                    <span>Paskutinį kartą atnaujinta</span>
-                    <strong>{lastUpdatedText}</strong>
+                    <h1>{displayName}</h1>
                 </div>
             </div>
 
@@ -291,7 +287,7 @@ export default function ProfilePage() {
 
                     <aside className="profile-sidebar">
                         <div className="save-card">
-                            <span className="save-label">Paskutinė atnaujinta</span>
+                            <span className="save-label">Paskutinį kartą atnaujinta</span>
                             <strong>{lastUpdatedText}</strong>
                             <button type="button" className="btn" onClick={saveProfile} disabled={saving}>
                                 {saving ? 'Išsaugoma...' : 'Išsaugoti'}

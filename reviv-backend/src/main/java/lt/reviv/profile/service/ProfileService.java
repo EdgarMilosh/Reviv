@@ -21,11 +21,11 @@ public class ProfileService {
 
     private static final List<String> HARMFUL_HABITS = List.of(
             "Rūkymas",
-            "Alkoholis",
+            "Alkoholio vartojimas",
             "Kofeinas",
             "Stresas",
             "Sėdimas gyvenimo būdas",
-            "Per didelis ekrano laikas"
+            "Per didelis ekrano naudojimas"
     );
 
     private final ProfileRepository profileRepository;

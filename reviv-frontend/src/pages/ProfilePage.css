@@ -37,7 +37,6 @@
     box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
 }
 
-.profile-status span,
 .save-label {
     display: block;
     color: #64748b;
@@ -45,7 +44,6 @@
     margin-bottom: 0.35rem;
 }
 
-.profile-status strong,
 .save-card strong {
     color: #111827;
     font-size: 1rem;
