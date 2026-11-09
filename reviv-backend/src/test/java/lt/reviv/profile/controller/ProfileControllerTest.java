@@ -61,14 +61,14 @@ class ProfileControllerTest {
                 180,
                 LocalDate.of(1997, 2, 3),
                 new BigDecimal("74.00"),
-                new String[]{"Alkoholis"},
+                new String[]{"Alkoholio vartojimas"},
                 new String[]{"Žiedadulkės"}
         );
         ProfileResponse expected = new ProfileResponse(
                 180,
                 LocalDate.of(1997, 2, 3),
                 new BigDecimal("74.00"),
-                new String[]{"Alkoholis"},
+                new String[]{"Alkoholio vartojimas"},
                 new String[]{"Žiedadulkės"},
                 OffsetDateTime.now()
         );
