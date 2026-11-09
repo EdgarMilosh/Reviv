@@ -75,7 +75,7 @@ class ProfileServiceTest {
                 175,
                 LocalDate.of(1995, 5, 20),
                 new BigDecimal("68.00"),
-                new String[]{"Alkoholis"},
+                new String[]{"Alkoholio vartojimas"},
                 new String[]{"Žiedadulkės", "Pienas", "Arašidų riešutas"}
         );
 
@@ -85,7 +85,7 @@ class ProfileServiceTest {
 
         assertEquals(175, response.heightCm());
         assertEquals(new BigDecimal("68.00"), response.weightKg());
-        assertArrayEquals(new String[]{"Alkoholis"}, response.harmfulHabits());
+        assertArrayEquals(new String[]{"Alkoholio vartojimas"}, response.harmfulHabits());
         assertArrayEquals(new String[]{"Žiedadulkės", "Pienas", "Arašidų riešutas"}, response.allergies());
         verify(profileRepository).save(any(Profile.class));
     }
