@@ -1,5 +1,6 @@
 package lt.reviv.common.error;
 
+import lt.reviv.profile.exception.ProfileValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,5 +26,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse notFound(UserNotFoundException e) {
         return new ErrorResponse(e.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler(ProfileValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse profileValidation(ProfileValidationException e) {
+        Map<String, String> fields = new LinkedHashMap<>();
+        fields.put(e.getField(), e.getMessage());
+        return new ErrorResponse("Please check the submitted data", fields);
     }
 }

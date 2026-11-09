@@ -6,6 +6,7 @@ import ConsentPage from './pages/ConsentPage'
 import HomePage from './pages/HomePage'
 import Placeholder from './pages/Placeholder'
 import UploadPage from './pages/UploadPage'
+import ProfilePage from './pages/ProfilePage'
 
 
 export default function App() {
@@ -32,7 +33,7 @@ export default function App() {
             >
                 <Route index element={<HomePage />} />
                 <Route path="upload" element={<UploadPage />} />
-                <Route path="profile" element={<Placeholder title="Mano profilis" />} />
+                <Route path="profile" element={<ProfilePage />} />
                 <Route
                     path="reports"
                     element={

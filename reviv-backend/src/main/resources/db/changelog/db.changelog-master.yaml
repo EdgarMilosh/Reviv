@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/001-app-user.yaml
   - include:
       file: db/changelog/002-blood-test.yaml
+  - include:
+      file: db/changelog/003-profile.yaml
