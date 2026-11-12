@@ -1,0 +1,103 @@
+.blood-test-review {
+    margin-top: 28px;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.review-header h2 { margin: 0; font-size: 21px; }
+.review-header button,
+.review-pdf-button {
+    padding: 9px 16px;
+    border: 1px solid #0f766e;
+    background: white;
+    color: #0f766e;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.review-pdf-button { margin-bottom: 20px; }
+.review-info { margin-bottom: 16px; line-height: 1.6; }
+.review-info p { margin: 5px 0; }
+.review-table-container { width: 100%; overflow-x: auto; }
+.review-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+.review-table th, .review-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+}
+.review-table th { background: #f8fafc; font-weight: 600; }
+.review-table tbody tr:hover { background: #f9fafb; }
+.review-checkbox-cell { text-align: center; }
+.review-checkbox-cell input {
+    width: 18px;
+    height: 18px;
+    accent-color: #0f766e;
+    cursor: pointer;
+}
+.review-checkbox-cell input:disabled { cursor: not-allowed; }
+.review-field-select {
+    min-width: 165px;
+    padding: 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #fff;
+}
+.review-marked-row { background: #fff1f0; }
+.review-marked-row:hover { background: #ffe4e1 !important; }
+.review-marked-label { margin-top: 6px; font-size: 12px; color: #b45309; }
+.review-notice { margin-top: 20px; color: #64748b; font-size: 13px; }
+.review-error { color: #b91c1c; }
+
+.review-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+.review-issue-count { margin: 0; color: #475569; font-size: 14px; }
+.review-action-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+.review-reextract-button, .review-confirm-button {
+    padding: 11px 22px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.review-reextract-button { background: white; color: #0f766e; border: 1px solid #0f766e; }
+.review-reextract-button:hover:not(:disabled) { background: #f0fdfa; }
+.review-confirm-button { background: #0f766e; color: white; border: 1px solid #0f766e; }
+.review-confirm-button:hover:not(:disabled) { background: #115e59; }
+.review-reextract-button:disabled, .review-confirm-button:disabled {
+    background: #e2e8f0;
+    color: #64748b;
+    border-color: #cbd5e1;
+    cursor: not-allowed;
+}
+.review-processing, .review-confirmed {
+    margin-top: 20px;
+    padding: 14px;
+    border-radius: 8px;
+    background: #f0fdfa;
+    border: 1px solid #99f6e4;
+    color: #115e59;
+}
+
+@media (max-width: 700px) {
+    .blood-test-review { padding: 14px; }
+    .review-header { align-items: flex-start; }
+    .review-actions { flex-direction: column; align-items: stretch; }
+    .review-action-buttons { flex-direction: column; }
+}
