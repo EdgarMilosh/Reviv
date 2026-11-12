@@ -60,8 +60,10 @@ export default function BloodTestReview({ testId }: { testId: number }) {
     const [test, setTest] = useState<BloodTestDetail | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
-    const [selectedFields, setSelectedFields] =
-        useState<Record<number, string>>({})
+    // Checkbox valdo visa rodikli, o ne atskira pasirinkta lauka.
+    // Reiksme true leidzia atidaryti pasirinkima ir dar neissaugo klaidos DB.
+    const [openedIndicators, setOpenedIndicators] =
+        useState<Record<number, boolean>>({})
     const [savingIndicatorId, setSavingIndicatorId] =
         useState<number | null>(null)
     const [isReextracting, setIsReextracting] = useState(false)
@@ -85,6 +87,7 @@ export default function BloodTestReview({ testId }: { testId: number }) {
     useEffect(() => {
         setTest(null)
         setLoading(true)
+        setOpenedIndicators({})
         pollingStartedAt.current = Date.now()
         void loadTest()
     }, [loadTest])
@@ -110,8 +113,24 @@ export default function BloodTestReview({ testId }: { testId: number }) {
     const isBusy = savingIndicatorId !== null || isReextracting || isConfirming
     const canEdit = test?.status === 'NEEDS_REVIEW'
 
+    // Pasirinktas checkbox be nurodyto klaidingo lauko yra nebaigtas zymejimas.
+    const hasUnfinishedSelections = (test?.indicators ?? []).some(indicator =>
+        openedIndicators[indicator.id] === true &&
+        !unresolvedIssues.some(issue => issue.indicatorId === indicator.id)
+    )
+
+    useEffect(() => {
+        // Po taisymo ar patvirtinimo nepaliekame atidarytu juodrasciu.
+        if (test?.status === 'RETRY_QUEUED' ||
+            test?.status === 'PROCESSING' ||
+            test?.status === 'CONFIRMED') {
+            setOpenedIndicators({})
+        }
+    }, [test?.status])
+
     async function markIssue(indicatorId: number, fieldName: string) {
         if (isBusy) return
+        setOpenedIndicators(previous => ({ ...previous, [indicatorId]: true }))
         setSavingIndicatorId(indicatorId)
         setError('')
         try {
@@ -129,6 +148,7 @@ export default function BloodTestReview({ testId }: { testId: number }) {
 
     async function unmarkIssue(indicatorId: number, issueId: number) {
         if (isBusy) return
+        setOpenedIndicators(previous => ({ ...previous, [indicatorId]: true }))
         setSavingIndicatorId(indicatorId)
         setError('')
         try {
@@ -136,6 +156,14 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                 `/api/tyrimai/${testId}/issues/${issueId}`
             )
             setTest(response.data)
+            // Pasalinus paskutine klaidos zyma uzdarome pasirinkima ir varnele.
+            const hasMoreIssues = response.data.issues.some(
+                issue => !issue.resolved && issue.indicatorId === indicatorId
+            )
+            setOpenedIndicators(previous => ({
+                ...previous,
+                [indicatorId]: hasMoreIssues
+            }))
         } catch (err) {
             setError(getErrorMessage(err, 'Nepavyko atžymėti klaidos.'))
         } finally {
@@ -143,8 +171,57 @@ export default function BloodTestReview({ testId }: { testId: number }) {
         }
     }
 
+
+    async function toggleIndicator(
+        indicatorId: number,
+        checked: boolean,
+        issues: Issue[]
+    ) {
+        if (!canEdit || isBusy) return
+
+        // Uzdejimas tik atveria klaidos vietu pasirinkima.
+        setOpenedIndicators(previous => ({ ...previous, [indicatorId]: checked }))
+        if (checked || issues.length === 0) return
+
+        // Nuemus varnele pasaliname VISAS neissprestas to rodiklio klaidas.
+        // Naudojame jau egzistuojanti DELETE endpointa kiekvienai klaidai.
+        setSavingIndicatorId(indicatorId)
+        setError('')
+        try {
+            let latest: BloodTestDetail | null = null
+            for (const issue of issues) {
+                const response = await api.delete<BloodTestDetail>(
+                    `/api/tyrimai/${testId}/issues/${issue.id}`
+                )
+                latest = response.data
+            }
+            if (latest) setTest(latest)
+        } catch (err) {
+            // Jei dalis istrynimu pavyko, parodome realia serverio busena.
+            try {
+                const current = await api.get<BloodTestDetail>(
+                    `/api/tyrimai/${testId}`
+                )
+                setTest(current.data)
+            } catch {
+                // Paliekame anksciau zinomus duomenis.
+            }
+            setOpenedIndicators(previous => {
+                const copy = { ...previous }
+                delete copy[indicatorId]
+                return copy
+            })
+            setError(getErrorMessage(
+                err,
+                'Nepavyko panaikinti visu sio rodiklio klaidu. Patikrinkite likusias zymas.'
+            ))
+        } finally {
+            setSavingIndicatorId(null)
+        }
+    }
+
     async function reextract() {
-        if (!canEdit || unresolvedIssues.length === 0 || isBusy) return
+        if (!canEdit || unresolvedIssues.length === 0 || hasUnfinishedSelections || isBusy) return
         if (!window.confirm(
             `Pakartotinai patikrinti ${unresolvedIssues.length} pažymėtus laukus? ` +
             'Bus vykdoma mokama OpenAI API užklausa.'
@@ -166,7 +243,7 @@ export default function BloodTestReview({ testId }: { testId: number }) {
     }
 
     async function confirmTest() {
-        if (!canEdit || unresolvedIssues.length !== 0 || isBusy) return
+        if (!canEdit || unresolvedIssues.length !== 0 || hasUnfinishedSelections || isBusy) return
         if (!window.confirm(
             'Ar patikrinote visus rodiklius pagal originalų PDF ir norite patvirtinti tyrimą?'
         )) return
@@ -252,20 +329,22 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                                 <th>Reikšmė</th>
                                 <th>Vienetas</th>
                                 <th>Referencinis intervalas</th>
-                                <th>Klaidingai atpažinta</th>
-                                <th>Klaidos vieta</th>
+                                <th>Klaida?</th>
+                                <th>Kas neteisinga?</th>
                             </tr></thead>
                             <tbody>
                             {test.indicators.map(indicator => {
                                 const issues = unresolvedIssues.filter(
                                     issue => issue.indicatorId === indicator.id
                                 )
-                                const selectedField = selectedFields[indicator.id]
-                                    ?? issues[0]?.fieldName
-                                    ?? 'VALUE'
-                                const currentIssue = issues.find(
-                                    issue => issue.fieldName === selectedField
+                                const checked = openedIndicators[indicator.id]
+                                    ?? issues.length > 0
+                                const availableFields = Object.entries(fieldLabels).filter(
+                                    ([fieldName]) => !issues.some(
+                                        issue => issue.fieldName === fieldName
+                                    )
                                 )
+                                const savingThis = savingIndicatorId === indicator.id
 
                                 return (
                                     <tr
@@ -279,42 +358,92 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                                         <td className="review-checkbox-cell">
                                             <input
                                                 type="checkbox"
-                                                checked={Boolean(currentIssue)}
+                                                checked={checked}
                                                 disabled={!canEdit || isBusy}
-                                                onChange={() => {
-                                                    if (currentIssue) {
-                                                        void unmarkIssue(indicator.id, currentIssue.id)
-                                                    } else {
-                                                        void markIssue(indicator.id, selectedField)
-                                                    }
+                                                onChange={event => {
+                                                    void toggleIndicator(
+                                                        indicator.id,
+                                                        event.target.checked,
+                                                        issues
+                                                    )
                                                 }}
-                                                aria-label={`${indicator.name}: ${fieldLabels[selectedField]}`}
+                                                aria-label={`${indicator.name}: klaidingai atpažinta`}
+                                                aria-controls={`review-fields-${indicator.id}`}
                                             />
                                         </td>
                                         <td>
-                                            <select
-                                                className="review-field-select"
-                                                aria-label={`Klaidos vieta: ${indicator.name}`}
-                                                value={selectedField}
-                                                disabled={!canEdit || isBusy}
-                                                onChange={event => {
-                                                    setSelectedFields(previous => ({
-                                                        ...previous,
-                                                        [indicator.id]: event.target.value
-                                                    }))
-                                                }}
+                                            <div
+                                                className="review-field-editor"
+                                                id={`review-fields-${indicator.id}`}
                                             >
-                                                {Object.entries(fieldLabels).map(([value, label]) => (
-                                                    <option value={value} key={value}>{label}</option>
-                                                ))}
-                                            </select>
-                                            {issues.length > 0 && (
-                                                <div className="review-marked-label">
-                                                    Pažymėta: {issues.map(issue =>
-                                                    fieldLabels[issue.fieldName] ?? issue.fieldName
-                                                ).join(', ')}
-                                                </div>
-                                            )}
+                                                {checked && (
+                                                    <>
+                                                        {issues.length === 0 && (
+                                                            <span className="review-selection-hint">
+                                                                    Pasirinkite klaidos vietą
+                                                                </span>
+                                                        )}
+                                                        <div className="review-issue-tags">
+                                                            {issues.map(issue => (
+                                                                <span
+                                                                    className="review-issue-tag"
+                                                                    key={issue.id}
+                                                                >
+                                                                        {fieldLabels[issue.fieldName] ?? issue.fieldName}
+                                                                    {canEdit && (
+                                                                        <button
+                                                                            type="button"
+                                                                            className="review-issue-remove"
+                                                                            onClick={() => void unmarkIssue(
+                                                                                indicator.id,
+                                                                                issue.id
+                                                                            )}
+                                                                            disabled={isBusy}
+                                                                            aria-label={`Pašalinti klaidą: ${indicator.name}, ${fieldLabels[issue.fieldName] ?? issue.fieldName}`}
+                                                                            title="Atšaukti šią klaidą"
+                                                                        >
+                                                                            ×
+                                                                        </button>
+                                                                    )}
+                                                                    </span>
+                                                            ))}
+                                                        </div>
+                                                        {availableFields.length > 0 && canEdit && (
+                                                            <select
+                                                                className="review-field-select"
+                                                                aria-label={`Kas neteisinga: ${indicator.name}`}
+                                                                value=""
+                                                                disabled={isBusy}
+                                                                onChange={event => {
+                                                                    if (event.target.value) {
+                                                                        void markIssue(
+                                                                            indicator.id,
+                                                                            event.target.value
+                                                                        )
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <option value="" disabled>
+                                                                    + Pasirinkite, kas neteisinga
+                                                                </option>
+                                                                {availableFields.map(([value, label]) => (
+                                                                    <option key={value} value={value}>
+                                                                        {label}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        )}
+                                                        {savingThis && (
+                                                            <span className="review-saving">
+                                                                    Išsaugoma...
+                                                                </span>
+                                                        )}
+                                                    </>
+                                                )}
+                                                {!checked && (
+                                                    <span className="review-no-errors">–</span>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 )
@@ -330,14 +459,21 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                         Už normos ribų esanti reikšmė savaime nėra DI atpažinimo klaida.
                     </p>
                     <div className="review-actions">
-                        <p className="review-issue-count">
-                            Pažymėtų klaidingų laukų: <strong>{unresolvedIssues.length}</strong>
-                        </p>
+                        <div className="review-issue-summary">
+                            <p className="review-issue-count">
+                                Pažymėtų klaidingų laukų: <strong>{unresolvedIssues.length}</strong>
+                            </p>
+                            {hasUnfinishedSelections && (
+                                <p className="review-selection-warning">
+                                    Pasirinkite klaidos vietą arba nuimkite varnelę.
+                                </p>
+                            )}
+                        </div>
                         <div className="review-action-buttons">
                             <button
                                 type="button"
                                 className="review-reextract-button"
-                                disabled={unresolvedIssues.length === 0 || isBusy}
+                                disabled={unresolvedIssues.length === 0 || hasUnfinishedSelections || isBusy}
                                 onClick={() => void reextract()}
                             >
                                 {isReextracting ? 'Siunčiama...' : 'Ištraukti iš naujo'}
@@ -345,7 +481,7 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                             <button
                                 type="button"
                                 className="review-confirm-button"
-                                disabled={unresolvedIssues.length > 0 || isBusy}
+                                disabled={unresolvedIssues.length > 0 || hasUnfinishedSelections || isBusy}
                                 onClick={() => void confirmTest()}
                             >
                                 {isConfirming ? 'Patvirtinama...' : 'Patvirtinti tyrimą'}
