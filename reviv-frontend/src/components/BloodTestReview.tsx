@@ -2,14 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { api } from '../api'
 import './BloodTestReview.css'
-
-type Indicator = {
-    id: number
-    name: string
-    rawValue: string | null
-    unit: string | null
-    referenceInterval: string | null
-}
+import BloodTestResults, { type BloodIndicator } from './BloodTestResults'
 
 type Issue = {
     id: number
@@ -26,7 +19,7 @@ type BloodTestDetail = {
     laboratory: string | null
     testDate: string | null
     extractionError: string | null
-    indicators: Indicator[]
+    indicators: BloodIndicator[]
     issues: Issue[]
 }
 
@@ -288,6 +281,25 @@ export default function BloodTestReview({ testId }: { testId: number }) {
     }
 
     if (loading) return <p>Įkeliami tyrimo duomenys...</p>
+
+
+    if (test?.status === 'CONFIRMED') {
+        return (
+            <>
+                <BloodTestResults
+                    test={test}
+                    onOpenPdf={() => void openOriginalPdf()}
+                />
+
+                {error && (
+                    <p role="alert" className="review-error">
+                        {error}
+                    </p>
+                )}
+            </>
+        )
+    }
+
 
     return (
         <section className="blood-test-review">
