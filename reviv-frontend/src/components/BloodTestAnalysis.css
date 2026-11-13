@@ -1,0 +1,151 @@
+.blood-test-analysis {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.blood-test-analysis h2 {
+    margin: 0 0 24px;
+    color: #111827;
+    font-size: 23px;
+    font-weight: 700;
+}
+
+.blood-test-analysis > button {
+    background: #0f766e;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    padding: 12px 26px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.blood-test-analysis > button:hover:not(:disabled) {
+    background: #115e59;
+}
+
+.blood-test-analysis > button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.analysis-indicator {
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+}
+
+.analysis-indicator h3 {
+    margin: 0 0 12px;
+    color: #111827;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.analysis-indicator p {
+    font-size: 14px;
+    line-height: 1.65;
+    margin: 10px 0;
+    color: #374151;
+}
+
+.analysis-indicator-status {
+    display: inline-block;
+    background: #fff7ed;
+    color: #c2410c !important;
+    border: 1px solid #fed7aa;
+    border-radius: 20px;
+    padding: 5px 13px;
+    font-size: 12px !important;
+    font-weight: 600;
+    margin: 0 0 12px !important;
+}
+
+
+.analysis-indicator ul {
+    margin: 12px 0;
+    padding-left: 22px;
+    color: #374151;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.analysis-indicator li {
+    margin-bottom: 5px;
+}
+
+
+.analysis-ai-label {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: #5b6bc4;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+.analysis-indicator-critical {
+    background: #fef2f2;
+    border: 1px solid #ef4444;
+    border-radius: 7px;
+}
+
+.analysis-indicator-critical p[role="alert"] {
+    color: #b91c1c;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.analysis-disclaimer {
+    margin-top: 20px;
+    padding: 14px 17px;
+    border: 1px solid #f4cb61;
+    border-radius: 6px;
+    background: #fffbeb;
+    color: #78350f;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+.analysis-state {
+    background: #f0fdfa;
+    border: 1px solid #99f6e4;
+    border-radius: 8px;
+    padding: 16px;
+    color: #115e59;
+    font-size: 14px;
+}
+
+.analysis-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 14px 16px;
+    color: #b91c1c;
+    font-size: 14px;
+}
+
+@media (max-width: 700px) {
+    .blood-test-analysis h2 {
+        font-size: 20px;
+    }
+
+    .analysis-indicator {
+        padding: 16px;
+    }
+
+    .blood-test-analysis > button {
+        width: 100%;
+    }
+}

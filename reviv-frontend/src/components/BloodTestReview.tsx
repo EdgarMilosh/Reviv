@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { api } from '../api'
 import './BloodTestReview.css'
+import BloodTestAnalysis from './BloodTestAnalysis'
 
 type Indicator = {
     id: number
@@ -321,7 +322,7 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                     <p className="review-error">{test.extractionError}</p>
                 )}
 
-                {test.indicators.length > 0 && (
+                {test.status !== 'CONFIRMED' && test.indicators.length > 0 && (
                     <div className="review-table-container">
                         <table className="review-table">
                             <thead><tr>
@@ -497,9 +498,14 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                 )}
 
                 {test.status === 'CONFIRMED' && (
-                    <p className="review-confirmed" role="status">
-                        Tyrimas patvirtintas. Rodikliai išsaugoti ir paruošti tolesnei analizei.
-                    </p>
+                    <>
+                        <p className="review-confirmed" role="status">
+                            Tyrimas patvirtintas. Rodikliai išsaugoti
+                            ir paruošti tolesnei analizei.
+                        </p>
+
+                        <BloodTestAnalysis testId={testId} />
+                    </>
                 )}
             </>}
         </section>

@@ -1,6 +1,7 @@
 
-package lt.reviv.bloodtests.service;
+package lt.reviv.bloodtests.service.extraction;
 
+import lt.reviv.bloodtests.service.review.BloodTestCorrectionRequestedEvent;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;

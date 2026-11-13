@@ -1,4 +1,4 @@
-package lt.reviv.bloodtests.dto;
+package lt.reviv.bloodtests.dto.review;
 
 import lt.reviv.bloodtests.domain.BloodTest;
 import lt.reviv.bloodtests.domain.BloodTestIndicator;

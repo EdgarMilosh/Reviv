@@ -1,5 +1,6 @@
-package lt.reviv.bloodtests.ai;
+package lt.reviv.bloodtests.ai.extraction;
 
+import lt.reviv.bloodtests.ai.OpenAiProperties;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;

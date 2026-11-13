@@ -1,4 +1,4 @@
-package lt.reviv.bloodtests.service;
+package lt.reviv.bloodtests.service.upload;
 
 import lt.reviv.bloodtests.domain.BloodTest;
 import lt.reviv.bloodtests.repository.BloodTestRepository;

@@ -2,7 +2,7 @@ package lt.reviv.service;
 
 import lt.reviv.bloodtests.domain.BloodTest;
 import lt.reviv.bloodtests.repository.BloodTestRepository;
-import lt.reviv.bloodtests.service.BloodTestService;
+import lt.reviv.bloodtests.service.upload.BloodTestService;
 import lt.reviv.common.error.UserNotFoundException;
 import lt.reviv.users.domain.AppUser;
 import lt.reviv.users.domain.UserRole;

@@ -1,8 +1,8 @@
-package lt.reviv.bloodtests.service;
+package lt.reviv.bloodtests.service.extraction;
 
-import lt.reviv.bloodtests.ai.ExtractedReport;
+import lt.reviv.bloodtests.ai.extraction.ExtractedReport;
 import lt.reviv.bloodtests.ai.OpenAiProperties;
-import lt.reviv.bloodtests.ai.PdfExtractionClient;
+import lt.reviv.bloodtests.ai.extraction.PdfExtractionClient;
 import lt.reviv.bloodtests.domain.BloodTest;
 import lt.reviv.bloodtests.domain.BloodTestIndicator;
 import lt.reviv.bloodtests.repository.BloodTestIndicatorRepository;
