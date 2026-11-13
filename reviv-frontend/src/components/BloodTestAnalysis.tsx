@@ -143,7 +143,6 @@ export default function BloodTestAnalysis({
                                         ? ` – ${indicator.deviationPercent}%`
                                         : ''}
                                 </p>
-
                                 <p>
                                     Referencinis intervalas:{' '}
                                     {indicator.referenceInterval ?? 'Nenurodytas'}
@@ -227,13 +226,13 @@ export default function BloodTestAnalysis({
                                         {indicator.unit}
                                     </h3>
 
-                                    <p>
-                                        className="analysis-indicator-status"
+                                    <p className="analysis-indicator-status">
                                         {indicator.status === 'BELOW'
                                             ? 'Žemiau intervalo'
                                             : indicator.status === 'ABOVE'
                                                 ? 'Aukščiau intervalo'
                                                 : 'Nepavyko įvertinti'}
+
                                         {indicator.deviationPercent !== null
                                             ? ` – ${indicator.deviationPercent}%`
                                             : ''}
