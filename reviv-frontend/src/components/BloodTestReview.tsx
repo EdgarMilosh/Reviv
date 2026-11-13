@@ -2,15 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { api } from '../api'
 import './BloodTestReview.css'
+import BloodTestResults, { type BloodIndicator } from './BloodTestResults'
 import BloodTestAnalysis from './BloodTestAnalysis'
-
-type Indicator = {
-    id: number
-    name: string
-    rawValue: string | null
-    unit: string | null
-    referenceInterval: string | null
-}
 
 type Issue = {
     id: number
@@ -27,7 +20,7 @@ type BloodTestDetail = {
     laboratory: string | null
     testDate: string | null
     extractionError: string | null
-    indicators: Indicator[]
+    indicators: BloodIndicator[]
     issues: Issue[]
 }
 
@@ -61,8 +54,7 @@ export default function BloodTestReview({ testId }: { testId: number }) {
     const [test, setTest] = useState<BloodTestDetail | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
-    // Checkbox valdo visa rodikli, o ne atskira pasirinkta lauka.
-    // Reiksme true leidzia atidaryti pasirinkima ir dar neissaugo klaidos DB.
+
     const [openedIndicators, setOpenedIndicators] =
         useState<Record<number, boolean>>({})
     const [savingIndicatorId, setSavingIndicatorId] =
@@ -70,6 +62,9 @@ export default function BloodTestReview({ testId }: { testId: number }) {
     const [isReextracting, setIsReextracting] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
     const pollingStartedAt = useRef(Date.now())
+
+    const [showAnalysis, setShowAnalysis] = useState(false)
+    const [startingAnalysis, setStartingAnalysis] = useState(false)
 
     const loadTest = useCallback(async () => {
         try {
@@ -109,6 +104,10 @@ export default function BloodTestReview({ testId }: { testId: number }) {
 
         return () => window.clearInterval(intervalId)
     }, [test?.status, loadTest])
+
+    useEffect(() => {
+        setShowAnalysis(false)
+    }, [testId])
 
     const unresolvedIssues = (test?.issues ?? []).filter(issue => !issue.resolved)
     const isBusy = savingIndicatorId !== null || isReextracting || isConfirming
@@ -288,7 +287,69 @@ export default function BloodTestReview({ testId }: { testId: number }) {
         }
     }
 
+
+    async function requestExplanation() {
+        if (startingAnalysis) return
+
+        setStartingAnalysis(true)
+        setError('')
+
+        try {
+            await api.post(
+                `/api/tyrimai/${testId}/analysis`
+            )
+
+            setShowAnalysis(true)
+
+        } catch (err) {
+            setError(getErrorMessage(
+                err,
+                'Nepavyko pradėti rezultatų analizės.'
+            ))
+        } finally {
+            setStartingAnalysis(false)
+        }
+    }
+
+
     if (loading) return <p>Įkeliami tyrimo duomenys...</p>
+
+
+
+    if (test?.status === 'CONFIRMED') {
+        return (
+            <>
+                {showAnalysis ? (
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => setShowAnalysis(false)}
+                            className="review-pdf-button"
+                        >
+                            ← Grįžti prie rodiklių
+                        </button>
+
+                        <BloodTestAnalysis testId={testId} />
+                    </>
+                ) : (
+                    <BloodTestResults
+                        test={test}
+                        onOpenPdf={() => void openOriginalPdf()}
+                        onExplain={() => void requestExplanation()}
+                        explanationLoading={startingAnalysis}
+                    />
+                )}
+
+                {error && (
+                    <p role="alert" className="review-error">
+                        {error}
+                    </p>
+                )}
+            </>
+        )
+    }
+
+
 
     return (
         <section className="blood-test-review">
@@ -322,7 +383,7 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                     <p className="review-error">{test.extractionError}</p>
                 )}
 
-                {test.status !== 'CONFIRMED' && test.indicators.length > 0 && (
+                {test.indicators.length > 0 && (
                     <div className="review-table-container">
                         <table className="review-table">
                             <thead><tr>
@@ -498,14 +559,9 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                 )}
 
                 {test.status === 'CONFIRMED' && (
-                    <>
-                        <p className="review-confirmed" role="status">
-                            Tyrimas patvirtintas. Rodikliai išsaugoti
-                            ir paruošti tolesnei analizei.
-                        </p>
-
-                        <BloodTestAnalysis testId={testId} />
-                    </>
+                    <p className="review-confirmed" role="status">
+                        Tyrimas patvirtintas. Rodikliai išsaugoti ir paruošti tolesnei analizei.
+                    </p>
                 )}
             </>}
         </section>
