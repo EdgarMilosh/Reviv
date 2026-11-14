@@ -1,0 +1,137 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-us7-analysis
+      author: reviv
+      changes:
+
+        # US-7 tyrimu analizes
+        - createTable:
+            tableName: blood_test_analyses
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: blood_test_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: PENDING
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: ai_model
+                  type: VARCHAR(100)
+
+              - column:
+                  name: profile_snapshot
+                  type: TEXT
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: completed_at
+                  type: TIMESTAMP WITH TIME ZONE
+
+        - addUniqueConstraint:
+            tableName: blood_test_analyses
+            columnNames: blood_test_id
+            constraintName: uk_analysis_blood_test
+
+        - addForeignKeyConstraint:
+            baseTableName: blood_test_analyses
+            baseColumnNames: blood_test_id
+            referencedTableName: blood_test
+            referencedColumnNames: id
+            constraintName: fk_analysis_blood_test
+            onDelete: CASCADE
+
+        # US-7 rodikliu paaiskinimai
+        - createTable:
+            tableName: indicator_explanations
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: analysis_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: indicator_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: meaning
+                  type: TEXT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: possible_causes_json
+                  type: TEXT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: practical_advice
+                  type: TEXT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+
+        - addUniqueConstraint:
+            tableName: indicator_explanations
+            columnNames: analysis_id, indicator_id
+            constraintName: uk_explanation_analysis_indicator
+
+        - addForeignKeyConstraint:
+            baseTableName: indicator_explanations
+            baseColumnNames: analysis_id
+            referencedTableName: blood_test_analyses
+            referencedColumnNames: id
+            constraintName: fk_explanation_analysis
+            onDelete: CASCADE
+
+        - addForeignKeyConstraint:
+            baseTableName: indicator_explanations
+            baseColumnNames: indicator_id
+            referencedTableName: blood_test_indicator
+            referencedColumnNames: id
+            constraintName: fk_explanation_indicator
+            onDelete: CASCADE
+
+        - createIndex:
+            tableName: indicator_explanations
+            indexName: idx_explanation_indicator
+            columns:
+              - column:
+                  name: indicator_id

@@ -1,7 +1,7 @@
-package lt.reviv.bloodtests.controller;
+package lt.reviv.bloodtests.controller.review;
 
-import lt.reviv.bloodtests.dto.BloodTestDetailResponse;
-import lt.reviv.bloodtests.service.BloodTestReviewService;
+import lt.reviv.bloodtests.dto.review.BloodTestDetailResponse;
+import lt.reviv.bloodtests.service.review.BloodTestReviewService;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import lt.reviv.bloodtests.dto.MarkExtractionIssueRequest;
+import lt.reviv.bloodtests.dto.review.MarkExtractionIssueRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

@@ -1,4 +1,4 @@
-package lt.reviv.bloodtests.dto;
+package lt.reviv.bloodtests.dto.upload;
 
 import lt.reviv.bloodtests.domain.BloodTest;
 import java.time.OffsetDateTime;

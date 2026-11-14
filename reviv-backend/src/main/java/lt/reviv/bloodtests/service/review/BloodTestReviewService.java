@@ -1,8 +1,8 @@
 
-package lt.reviv.bloodtests.service;
+package lt.reviv.bloodtests.service.review;
 
 import lt.reviv.bloodtests.domain.BloodTest;
-import lt.reviv.bloodtests.dto.BloodTestDetailResponse;
+import lt.reviv.bloodtests.dto.review.BloodTestDetailResponse;
 
 import lt.reviv.bloodtests.repository.BloodTestRepository;
 import lt.reviv.bloodtests.repository.BloodTestIndicatorRepository;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import lt.reviv.bloodtests.domain.ExtractionIssue;
-import lt.reviv.bloodtests.dto.MarkExtractionIssueRequest;
+import lt.reviv.bloodtests.dto.review.MarkExtractionIssueRequest;
 
 import lt.reviv.bloodtests.ai.OpenAiProperties;
 import org.springframework.context.ApplicationEventPublisher;

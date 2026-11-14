@@ -1,15 +1,16 @@
 package lt.reviv.service;
 
-import lt.reviv.bloodtests.ai.ExtractedReport;
 import lt.reviv.bloodtests.ai.OpenAiProperties;
-import lt.reviv.bloodtests.ai.PdfExtractionClient;
+import lt.reviv.bloodtests.ai.extraction.ExtractedReport;
+import lt.reviv.bloodtests.ai.extraction.PdfExtractionClient;
+import lt.reviv.bloodtests.ai.extraction.OpenAiPdfExtractionClient;
 import lt.reviv.bloodtests.domain.BloodTest;
 import lt.reviv.bloodtests.domain.BloodTestIndicator;
 import lt.reviv.bloodtests.domain.ExtractionIssue;
 import lt.reviv.bloodtests.repository.BloodTestIndicatorRepository;
 import lt.reviv.bloodtests.repository.BloodTestRepository;
 import lt.reviv.bloodtests.repository.ExtractionIssueRepository;
-import lt.reviv.bloodtests.service.BloodTestCorrectionService;
+import lt.reviv.bloodtests.service.extraction.BloodTestCorrectionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

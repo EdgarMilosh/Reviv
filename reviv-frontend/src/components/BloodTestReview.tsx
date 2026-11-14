@@ -3,6 +3,7 @@ import axios from 'axios'
 import { api } from '../api'
 import './BloodTestReview.css'
 import BloodTestResults, { type BloodIndicator } from './BloodTestResults'
+import BloodTestAnalysis from './BloodTestAnalysis'
 
 type Issue = {
     id: number
@@ -53,15 +54,19 @@ export default function BloodTestReview({ testId }: { testId: number }) {
     const [test, setTest] = useState<BloodTestDetail | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
-    // Checkbox valdo visa rodikli, o ne atskira pasirinkta lauka.
-    // Reiksme true leidzia atidaryti pasirinkima ir dar neissaugo klaidos DB.
+
     const [openedIndicators, setOpenedIndicators] =
         useState<Record<number, boolean>>({})
     const [savingIndicatorId, setSavingIndicatorId] =
         useState<number | null>(null)
     const [isReextracting, setIsReextracting] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
-    const pollingStartedAt = useRef<number | null>(null)
+    const pollingStartedAt = useRef(0)
+
+    const [analysisTestId, setAnalysisTestId] = useState<number | null>(null)
+
+    const showAnalysis = analysisTestId === testId
+    const [startingAnalysis, setStartingAnalysis] = useState(false)
 
     const loadTest = useCallback(async () => {
         try {
@@ -79,66 +84,57 @@ export default function BloodTestReview({ testId }: { testId: number }) {
 
 
     useEffect(() => {
-        let active = true
+        let cancelled = false
 
-        api.get<BloodTestDetail>(`/api/tyrimai/${testId}`)
+        pollingStartedAt.current = Date.now()
+
+        void api.get<BloodTestDetail>(
+            `/api/tyrimai/${testId}`
+        )
             .then(response => {
-                if (!active) return
+                if (cancelled) return
 
                 setTest(response.data)
                 setError('')
             })
-            .catch((err: unknown) => {
-                if (!active) return
-
-                setError(getErrorMessage(
-                    err,
-                    'Nepavyko gauti tyrimo duomenų.'
-                ))
+            .catch(err => {
+                if (!cancelled) {
+                    setError(
+                        getErrorMessage(
+                            err,
+                            'Nepavyko gauti tyrimo duomenų.'
+                        )
+                    )
+                }
             })
             .finally(() => {
-                if (active) {
+                if (!cancelled) {
                     setLoading(false)
                 }
             })
 
         return () => {
-            active = false
+            cancelled = true
         }
     }, [testId])
 
 
-
     useEffect(() => {
         const status = test?.status
-
-        if (
-            !status ||
-            !['UPLOADED', 'PROCESSING', 'RETRY_QUEUED'].includes(status)
-        ) {
-            pollingStartedAt.current = null
+        if (!status || !['UPLOADED', 'PROCESSING', 'RETRY_QUEUED'].includes(status)) {
             return
         }
 
-        if (pollingStartedAt.current === null) {
-            pollingStartedAt.current = Date.now()
-        }
-
         const intervalId = window.setInterval(() => {
-            if (
-                pollingStartedAt.current !== null &&
-                Date.now() - pollingStartedAt.current > 90_000
-            ) {
+            if (Date.now() - pollingStartedAt.current > 90_000) {
                 window.clearInterval(intervalId)
                 return
             }
-
             void loadTest()
         }, 2000)
 
         return () => window.clearInterval(intervalId)
     }, [test?.status, loadTest])
-
 
     const unresolvedIssues = (test?.issues ?? []).filter(issue => !issue.resolved)
     const isBusy = savingIndicatorId !== null || isReextracting || isConfirming
@@ -278,7 +274,6 @@ export default function BloodTestReview({ testId }: { testId: number }) {
             const response = await api.post<BloodTestDetail>(
                 `/api/tyrimai/${testId}/confirm`
             )
-
             setTest(response.data)
             setOpenedIndicators({})
         } catch (err) {
@@ -313,16 +308,58 @@ export default function BloodTestReview({ testId }: { testId: number }) {
         }
     }
 
+
+    async function requestExplanation() {
+        if (startingAnalysis) return
+
+        setStartingAnalysis(true)
+        setError('')
+
+        try {
+            await api.post(
+                `/api/tyrimai/${testId}/analysis`
+            )
+
+            setAnalysisTestId(testId)
+
+        } catch (err) {
+            setError(getErrorMessage(
+                err,
+                'Nepavyko pradėti rezultatų analizės.'
+            ))
+        } finally {
+            setStartingAnalysis(false)
+        }
+    }
+
+
     if (loading) return <p>Įkeliami tyrimo duomenys...</p>
+
 
 
     if (test?.status === 'CONFIRMED') {
         return (
             <>
-                <BloodTestResults
-                    test={test}
-                    onOpenPdf={() => void openOriginalPdf()}
-                />
+                {showAnalysis ? (
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => setAnalysisTestId(null)}
+                            className="review-pdf-button"
+                        >
+                            ← Grįžti prie rodiklių
+                        </button>
+
+                        <BloodTestAnalysis key={testId} testId={testId} />
+                    </>
+                ) : (
+                    <BloodTestResults
+                        test={test}
+                        onOpenPdf={() => void openOriginalPdf()}
+                        onExplain={() => void requestExplanation()}
+                        explanationLoading={startingAnalysis}
+                    />
+                )}
 
                 {error && (
                     <p role="alert" className="review-error">
@@ -332,6 +369,7 @@ export default function BloodTestReview({ testId }: { testId: number }) {
             </>
         )
     }
+
 
 
     return (

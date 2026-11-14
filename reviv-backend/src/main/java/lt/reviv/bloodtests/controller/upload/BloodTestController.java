@@ -1,8 +1,8 @@
-package lt.reviv.bloodtests.controller;
+package lt.reviv.bloodtests.controller.upload;
 
 import lt.reviv.bloodtests.domain.BloodTest;
-import lt.reviv.bloodtests.dto.BloodTestUploadResponse;
-import lt.reviv.bloodtests.service.BloodTestService;
+import lt.reviv.bloodtests.dto.upload.BloodTestUploadResponse;
+import lt.reviv.bloodtests.service.upload.BloodTestService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

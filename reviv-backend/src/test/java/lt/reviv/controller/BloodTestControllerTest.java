@@ -1,9 +1,9 @@
 package lt.reviv.controller;
 
-import lt.reviv.bloodtests.controller.BloodTestController;
+import lt.reviv.bloodtests.controller.upload.BloodTestController;
 import lt.reviv.bloodtests.domain.BloodTest;
-import lt.reviv.bloodtests.dto.BloodTestUploadResponse;
-import lt.reviv.bloodtests.service.BloodTestService;
+import lt.reviv.bloodtests.dto.upload.BloodTestUploadResponse;
+import lt.reviv.bloodtests.service.upload.BloodTestService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

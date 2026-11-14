@@ -1,13 +1,14 @@
 package lt.reviv.service;
 
-import lt.reviv.bloodtests.ai.ExtractedReport;
+import lt.reviv.bloodtests.ai.extraction.ExtractedReport;
 import lt.reviv.bloodtests.ai.OpenAiProperties;
-import lt.reviv.bloodtests.ai.PdfExtractionClient;
+import lt.reviv.bloodtests.ai.extraction.OpenAiPdfExtractionClient;
+import lt.reviv.bloodtests.ai.extraction.PdfExtractionClient;
 import lt.reviv.bloodtests.domain.BloodTest;
 import lt.reviv.bloodtests.domain.BloodTestIndicator;
 import lt.reviv.bloodtests.repository.BloodTestIndicatorRepository;
 import lt.reviv.bloodtests.repository.BloodTestRepository;
-import lt.reviv.bloodtests.service.BloodTestExtractionService;
+import lt.reviv.bloodtests.service.extraction.BloodTestExtractionService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +38,8 @@ import static org.mockito.Mockito.*;
 class BloodTestExtractionServiceTest {
     @Mock BloodTestRepository tests;
     @Mock BloodTestIndicatorRepository indicators;
-    @Mock PdfExtractionClient client;
+    @Mock
+    PdfExtractionClient client;
     @Mock PlatformTransactionManager txManager;
 
     BloodTestExtractionService service;

@@ -1,4 +1,4 @@
-package lt.reviv.bloodtests.dto;
+package lt.reviv.bloodtests.dto.review;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

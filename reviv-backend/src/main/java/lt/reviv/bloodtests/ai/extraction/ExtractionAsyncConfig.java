@@ -1,4 +1,4 @@
-package lt.reviv.bloodtests.ai;
+package lt.reviv.bloodtests.ai.extraction;
 
 import java.util.concurrent.ThreadPoolExecutor;
 import org.springframework.context.annotation.Bean;
