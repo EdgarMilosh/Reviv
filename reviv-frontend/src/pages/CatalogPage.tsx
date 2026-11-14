@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { api } from '../api'
 import SupplementEditor from '../components/SupplementEditor'
 import type { Supplement, SupplementFormKind } from '../types'
@@ -43,8 +43,6 @@ export default function CatalogPage() {
         }
     }, [reload])
 
-    const editingSupplement = typeof editing === 'number' ? supplements.find((s) => s.id === editing) ?? null : null
-
     async function remove(supplement: Supplement) {
         if (!window.confirm(`Ar tikrai norite pašalinti papildą „${supplement.name}“?`)) return
         setNotice('')
@@ -62,6 +60,23 @@ export default function CatalogPage() {
         }
     }
 
+    function renderEditor(supplement: Supplement | null) {
+        return (
+            <SupplementEditor
+                key={supplement ? supplement.id : 'new'}
+                supplement={supplement}
+                allSupplements={supplements}
+                onSaved={(message) => {
+                    setNotice(message)
+                    setEditing(null)
+                    setReload((n) => n + 1)
+                }}
+                onChanged={() => setReload((n) => n + 1)}
+                onCancel={() => setEditing(null)}
+            />
+        )
+    }
+
     return (
         <div className="catalog-page">
             <div className="catalog-header">
@@ -77,20 +92,8 @@ export default function CatalogPage() {
             {notice && <p className="notice">{notice}</p>}
             {error && <p className="error">{error}</p>}
 
-            {(editing === 'new' || editingSupplement) && (
-                <SupplementEditor
-                    key={editingSupplement ? editingSupplement.id : 'new'}
-                    supplement={editingSupplement}
-                    allSupplements={supplements}
-                    onSaved={(message) => {
-                        setNotice(message)
-                        setEditing(null)
-                        setReload((n) => n + 1)
-                    }}
-                    onChanged={() => setReload((n) => n + 1)}
-                    onCancel={() => setEditing(null)}
-                />
-            )}
+            {/* Naujas papildas pridedamas virš sąrašo, esamas redaguojamas tiesiai po savo eilute */}
+            {editing === 'new' && renderEditor(null)}
 
             {loading ? (
                 <p className="center">Kraunama…</p>
@@ -111,39 +114,46 @@ export default function CatalogPage() {
                         </thead>
                         <tbody>
                         {supplements.map((s) => (
-                            <tr key={s.id}>
-                                <td>{s.name}</td>
-                                <td>{s.activeSubstance}</td>
-                                <td>{FORM_LABELS[s.form]}</td>
-                                <td>
-                                    {s.doseAmount} {s.doseUnit}
-                                </td>
-                                <td>
-                                    {s.maxDailyDose} {s.doseUnit}
-                                </td>
-                                <td>
-                                        <span className={s.status === 'ACTIVE' ? 'badge active' : 'badge inactive'}>
-                                            {s.status === 'ACTIVE' ? 'Aktyvus' : 'Nebenaudojamas'}
-                                        </span>
-                                </td>
-                                <td>{s.interactions.length}</td>
-                                <td className="actions">
-                                    <button
-                                        type="button"
-                                        className="btn secondary small"
-                                        onClick={() => setEditing(s.id)}
-                                    >
-                                        Redaguoti
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn secondary small"
-                                        onClick={() => void remove(s)}
-                                    >
-                                        Šalinti
-                                    </button>
-                                </td>
-                            </tr>
+                            <Fragment key={s.id}>
+                                <tr className={editing === s.id ? 'editing' : undefined}>
+                                    <td>{s.name}</td>
+                                    <td>{s.activeSubstance}</td>
+                                    <td>{FORM_LABELS[s.form]}</td>
+                                    <td>
+                                        {s.doseAmount} {s.doseUnit}
+                                    </td>
+                                    <td>
+                                        {s.maxDailyDose} {s.doseUnit}
+                                    </td>
+                                    <td>
+                                            <span className={s.status === 'ACTIVE' ? 'badge active' : 'badge inactive'}>
+                                                {s.status === 'ACTIVE' ? 'Aktyvus' : 'Nebenaudojamas'}
+                                            </span>
+                                    </td>
+                                    <td>{s.interactions.length}</td>
+                                    <td className="actions">
+                                        <button
+                                            type="button"
+                                            className="btn secondary small"
+                                            onClick={() => setEditing(editing === s.id ? null : s.id)}
+                                        >
+                                            {editing === s.id ? 'Uždaryti' : 'Redaguoti'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn secondary small"
+                                            onClick={() => void remove(s)}
+                                        >
+                                            Šalinti
+                                        </button>
+                                    </td>
+                                </tr>
+                                {editing === s.id && (
+                                    <tr className="editor-row">
+                                        <td colSpan={8}>{renderEditor(s)}</td>
+                                    </tr>
+                                )}
+                            </Fragment>
                         ))}
                         {supplements.length === 0 && (
                             <tr>

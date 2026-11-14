@@ -75,3 +75,23 @@
     background: #fee2e2;
     color: #991b1b;
 }
+
+/* Redaguojamas papildas: forma atsidaro tiesiai po jo eilute */
+.catalog-table tr.editing > td {
+    background: #eff6ff;
+}
+
+.catalog-table tr.editor-row > td {
+    padding: 0;
+    white-space: normal;
+    background: #f8fafc;
+    border-bottom: 2px solid #bfdbfe;
+}
+
+.catalog-table tr.editor-row .supplement-editor {
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: #f8fafc;
+}

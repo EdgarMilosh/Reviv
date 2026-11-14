@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 import { api } from '../api'
 import type { Supplement, SupplementFormKind } from '../types'
@@ -47,6 +47,7 @@ function fieldError(errors: FieldErrors, key: string) {
 
 /** Papildo kūrimo ir redagavimo forma su platintojais ir sąveikomis (US-10). */
 export default function SupplementEditor({ supplement, allSupplements, onSaved, onChanged, onCancel }: Props) {
+    const sectionRef = useRef<HTMLElement>(null)
     const [name, setName] = useState(supplement?.name ?? '')
     const [activeSubstance, setActiveSubstance] = useState(supplement?.activeSubstance ?? '')
     const [form, setForm] = useState<SupplementFormKind | ''>(supplement?.form ?? '')
@@ -74,6 +75,11 @@ export default function SupplementEditor({ supplement, allSupplements, onSaved, 
                 !supplement.interactions.some((i) => i.otherSupplementId === s.id),
         )
         : []
+
+    // Atidarius formą, paslenkama prie jos (jei ji žemiau ekrano)
+    useEffect(() => {
+        sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }, [])
 
     function updateDistributor(index: number, patch: Partial<{ name: string; url: string }>) {
         setDistributors((current) => current.map((d, i) => (i === index ? { ...d, ...patch } : d)))
