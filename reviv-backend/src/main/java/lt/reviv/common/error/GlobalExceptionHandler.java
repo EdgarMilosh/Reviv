@@ -1,6 +1,9 @@
 package lt.reviv.common.error;
 
 import lt.reviv.profile.exception.ProfileValidationException;
+import lt.reviv.supplements.exception.SupplementConflictException;
+import lt.reviv.supplements.exception.SupplementNotFoundException;
+import lt.reviv.supplements.exception.SupplementValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -34,5 +37,23 @@ public class GlobalExceptionHandler {
         Map<String, String> fields = new LinkedHashMap<>();
         fields.put(e.getField(), e.getMessage());
         return new ErrorResponse("Please check the submitted data", fields);
+    }
+
+    @ExceptionHandler(SupplementNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse supplementNotFound(SupplementNotFoundException e) {
+        return new ErrorResponse(e.getMessage(), Map.of());
+    }
+
+    @ExceptionHandler(SupplementValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse supplementValidation(SupplementValidationException e) {
+        return new ErrorResponse("Please check the submitted data", Map.of(e.getField(), e.getMessage()));
+    }
+
+    @ExceptionHandler(SupplementConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse supplementConflict(SupplementConflictException e) {
+        return new ErrorResponse(e.getMessage(), Map.of(e.getField(), e.getMessage()));
     }
 }
