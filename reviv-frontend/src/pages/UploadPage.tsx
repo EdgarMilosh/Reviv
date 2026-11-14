@@ -2,6 +2,8 @@ import { useRef, useState, type DragEvent } from 'react'
 import axios from 'axios'
 import { api } from '../api'
 import './UploadPage.css'
+import { useSearchParams } from 'react-router-dom'
+import BloodTestReview from '../components/BloodTestReview'
 
 type UploadResponse = {
     id: number
@@ -16,6 +18,11 @@ const MAX_SIZE = 10 * 1024 * 1024
 export default function UploadPage() {
     const inputRef = useRef<HTMLInputElement>(null)
 
+    const [searchParams, setSearchParams] = useSearchParams()
+
+    const testId = Number(searchParams.get('testId'))
+    const validTestId = Number.isSafeInteger(testId) && testId > 0
+
     const [file, setFile] = useState<File | null>(null)
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState<UploadResponse | null>(null)
@@ -25,6 +32,8 @@ export default function UploadPage() {
         setError('')
         setResult(null)
         setFile(null)
+
+        setSearchParams({}, { replace: true })
 
         if (!selected) return
 
@@ -63,6 +72,10 @@ export default function UploadPage() {
             )
 
             setResult(response.data)
+            setSearchParams(
+                { testId: String(response.data.id) },
+                { replace: true }
+            )
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 409) {
@@ -156,6 +169,12 @@ export default function UploadPage() {
                 <p className="upload-error" role="alert">
                     {error}
                 </p>
+            )}
+            {validTestId && (
+                <BloodTestReview
+                    key={testId}
+                    testId={testId}
+                />
             )}
         </div>
     )

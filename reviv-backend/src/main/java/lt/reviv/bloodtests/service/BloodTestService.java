@@ -20,6 +20,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import org.springframework.context.ApplicationEventPublisher;
 import java.util.HexFormat;
 
 @Service
@@ -27,29 +29,32 @@ public class BloodTestService {
 
     private static final long MAX_FILE_SIZE = 10L * 1024 * 1024;
 
+
+
     private final BloodTestRepository bloodTestRepository;
     private final AppUserRepository appUserRepository;
 
+    private final ApplicationEventPublisher eventPublisher;
+
+
     public BloodTestService(
             BloodTestRepository bloodTestRepository,
-            AppUserRepository appUserRepository
+            AppUserRepository appUserRepository,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.bloodTestRepository = bloodTestRepository;
         this.appUserRepository = appUserRepository;
+        this.eventPublisher = eventPublisher;
     }
 
+
     @Transactional
-    public BloodTest upload(
-            MultipartFile file,
-            Jwt jwt,
-            boolean allowDuplicate
-    ) {
-        // 1. Randame prisijungusį naudotoją
+    public BloodTest upload(MultipartFile file, Jwt jwt, boolean allowDuplicate) {
+
         AppUser user = appUserRepository
                 .findByGoogleId(jwt.getSubject())
                 .orElseThrow(UserNotFoundException::new);
 
-        // 2. Tikriname failo dydį
         if (file == null || file.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -64,7 +69,6 @@ public class BloodTestService {
             );
         }
 
-        // 3. Tikriname failo pavadinimą ir plėtinį
         String fileName = file.getOriginalFilename();
 
         if (fileName == null ||
@@ -88,7 +92,6 @@ public class BloodTestService {
             );
         }
 
-        // 4. Nuskaitome ir patikriname PDF turinį
         byte[] pdfBytes;
 
         try {
@@ -102,10 +105,8 @@ public class BloodTestService {
 
         validatePdf(pdfBytes);
 
-        // 5. Apskaičiuojame SHA-256
         String sha256 = calculateSha256(pdfBytes);
 
-        // 6. Ieškome dublikato
         boolean duplicate = bloodTestRepository
                 .existsByUserIdAndFileSha256(
                         user.getId(),
@@ -119,7 +120,6 @@ public class BloodTestService {
             );
         }
 
-        // 7. Sukuriame tyrimo įrašą
         BloodTest bloodTest = new BloodTest(
                 user.getId(),
                 fileName,
@@ -128,8 +128,13 @@ public class BloodTestService {
                 pdfBytes
         );
 
-        // 8. Išsaugome PostgreSQL
-        return bloodTestRepository.save(bloodTest);
+        BloodTest saved = bloodTestRepository.save(bloodTest);
+
+        eventPublisher.publishEvent(
+                new BloodTestUploadedEvent(saved.getId())
+        );
+
+        return saved;
     }
 
     private void validatePdf(byte[] bytes) {

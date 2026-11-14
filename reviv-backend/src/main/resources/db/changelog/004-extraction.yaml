@@ -1,0 +1,128 @@
+
+databaseChangeLog:
+  - changeSet:
+      id: 004-us4-extraction
+      author: reviv
+      changes:
+        # Papildomi tyrimo duomenys
+        - addColumn:
+            tableName: blood_test
+            columns:
+              - column:
+                  name: laboratory
+                  type: VARCHAR(255)
+              - column:
+                  name: test_date
+                  type: DATE
+              - column:
+                  name: extraction_error
+                  type: VARCHAR(255)
+              - column:
+                  name: extraction_attempts
+                  type: INTEGER
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+
+        # DI ištraukti kraujo tyrimų rodikliai
+        - createTable:
+            tableName: blood_test_indicator
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: blood_test_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: raw_value
+                  type: VARCHAR(128)
+              - column:
+                  name: unit
+                  type: VARCHAR(80)
+              - column:
+                  name: reference_interval
+                  type: VARCHAR(160)
+
+        - addForeignKeyConstraint:
+            baseTableName: blood_test_indicator
+            baseColumnNames: blood_test_id
+            referencedTableName: blood_test
+            referencedColumnNames: id
+            constraintName: fk_indicator_blood_test
+            onDelete: CASCADE
+
+        - createIndex:
+            tableName: blood_test_indicator
+            indexName: idx_indicator_test
+            columns:
+              - column:
+                  name: blood_test_id
+
+        # Naudotojo pažymėtos ištraukimo klaidos
+        - createTable:
+            tableName: extraction_issue
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: blood_test_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: indicator_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: field_name
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: note
+                  type: VARCHAR(500)
+              - column:
+                  name: resolved
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: extraction_issue
+            baseColumnNames: blood_test_id
+            referencedTableName: blood_test
+            referencedColumnNames: id
+            constraintName: fk_issue_blood_test
+            onDelete: CASCADE
+
+        - addForeignKeyConstraint:
+            baseTableName: extraction_issue
+            baseColumnNames: indicator_id
+            referencedTableName: blood_test_indicator
+            referencedColumnNames: id
+            constraintName: fk_issue_indicator
+            onDelete: CASCADE

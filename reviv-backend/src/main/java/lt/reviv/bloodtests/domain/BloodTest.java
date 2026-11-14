@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -41,6 +42,18 @@ public class BloodTest {
     @Column(name = "uploaded_at", nullable = false)
     private OffsetDateTime uploadedAt;
 
+    @Column(name = "laboratory", length = 255)
+    private String laboratory;
+
+    @Column(name = "test_date")
+    private LocalDate testDate;
+
+    @Column(name = "extraction_error", length = 255)
+    private String extractionError;
+
+    @Column(name = "extraction_attempts", nullable = false)
+    private int extractionAttempts;
+
     public BloodTest(
             Long userId,
             String fileName,
@@ -55,5 +68,52 @@ public class BloodTest {
         this.pdfData = pdfData.clone();
         this.status = "UPLOADED";
         this.uploadedAt = OffsetDateTime.now();
+        this.extractionAttempts = 0;
     }
+
+    public byte[] getPdfData() {
+        return pdfData.clone();
+    }
+
+    public void startProcessing() {
+        this.status = "PROCESSING";
+        this.extractionAttempts++;
+        this.extractionError = null;
+    }
+
+    public void finishExtraction(
+            String laboratory,
+            LocalDate testDate
+    ) {
+        this.laboratory = laboratory;
+        this.testDate = testDate;
+        this.status = "NEEDS_REVIEW";
+        this.extractionError = null;
+    }
+
+    public void failExtraction() {
+        this.status = "ERROR";
+        this.extractionError =
+                "Nepavyko ištraukti tyrimo duomenų.";
+    }
+
+    public void resetForRetry() {
+        this.status = "UPLOADED";
+        this.extractionError = null;
+    }
+
+    public void queueCorrection() {
+        this.status = "RETRY_QUEUED";
+    }
+
+    public void confirm() {
+        if (!"NEEDS_REVIEW".equals(this.status)) {
+            throw new IllegalStateException(
+                    "Tyrimas dar neparuoštas patvirtinimui."
+            );
+        }
+
+        this.status = "CONFIRMED";
+    }
+
 }
