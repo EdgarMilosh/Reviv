@@ -1,0 +1,77 @@
+.catalog-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 8px 0 40px;
+}
+
+.catalog-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.catalog-header h1 {
+    margin: 0;
+}
+
+.notice {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    padding: 0.6rem 0.9rem;
+    border-radius: 8px;
+}
+
+.catalog-table-wrap {
+    background: #ffffff;
+    border: 1px solid #dfe7ee;
+    border-radius: 12px;
+    overflow-x: auto;
+}
+
+.catalog-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.catalog-table th,
+.catalog-table td {
+    padding: 0.65rem 0.85rem;
+    text-align: left;
+    border-bottom: 1px solid #eef2f6;
+    white-space: nowrap;
+}
+
+.catalog-table th {
+    background: #f8fafc;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #475569;
+}
+
+.catalog-table .actions {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge.active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge.inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
