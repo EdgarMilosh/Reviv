@@ -61,7 +61,7 @@ export default function BloodTestReview({ testId }: { testId: number }) {
         useState<number | null>(null)
     const [isReextracting, setIsReextracting] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
-    const pollingStartedAt = useRef(Date.now())
+    const pollingStartedAt = useRef<number | null>(null)
 
     const loadTest = useCallback(async () => {
         try {
@@ -77,30 +77,68 @@ export default function BloodTestReview({ testId }: { testId: number }) {
         }
     }, [testId])
 
+
     useEffect(() => {
-        setTest(null)
-        setLoading(true)
-        setOpenedIndicators({})
-        pollingStartedAt.current = Date.now()
-        void loadTest()
-    }, [loadTest])
+        let active = true
+
+        api.get<BloodTestDetail>(`/api/tyrimai/${testId}`)
+            .then(response => {
+                if (!active) return
+
+                setTest(response.data)
+                setError('')
+            })
+            .catch((err: unknown) => {
+                if (!active) return
+
+                setError(getErrorMessage(
+                    err,
+                    'Nepavyko gauti tyrimo duomenų.'
+                ))
+            })
+            .finally(() => {
+                if (active) {
+                    setLoading(false)
+                }
+            })
+
+        return () => {
+            active = false
+        }
+    }, [testId])
+
+
 
     useEffect(() => {
         const status = test?.status
-        if (!status || !['UPLOADED', 'PROCESSING', 'RETRY_QUEUED'].includes(status)) {
+
+        if (
+            !status ||
+            !['UPLOADED', 'PROCESSING', 'RETRY_QUEUED'].includes(status)
+        ) {
+            pollingStartedAt.current = null
             return
         }
 
+        if (pollingStartedAt.current === null) {
+            pollingStartedAt.current = Date.now()
+        }
+
         const intervalId = window.setInterval(() => {
-            if (Date.now() - pollingStartedAt.current > 90_000) {
+            if (
+                pollingStartedAt.current !== null &&
+                Date.now() - pollingStartedAt.current > 90_000
+            ) {
                 window.clearInterval(intervalId)
                 return
             }
+
             void loadTest()
         }, 2000)
 
         return () => window.clearInterval(intervalId)
     }, [test?.status, loadTest])
+
 
     const unresolvedIssues = (test?.issues ?? []).filter(issue => !issue.resolved)
     const isBusy = savingIndicatorId !== null || isReextracting || isConfirming
@@ -111,15 +149,6 @@ export default function BloodTestReview({ testId }: { testId: number }) {
         openedIndicators[indicator.id] === true &&
         !unresolvedIssues.some(issue => issue.indicatorId === indicator.id)
     )
-
-    useEffect(() => {
-        // Po taisymo ar patvirtinimo nepaliekame atidarytu juodrasciu.
-        if (test?.status === 'RETRY_QUEUED' ||
-            test?.status === 'PROCESSING' ||
-            test?.status === 'CONFIRMED') {
-            setOpenedIndicators({})
-        }
-    }, [test?.status])
 
     async function markIssue(indicatorId: number, fieldName: string) {
         if (isBusy) return
@@ -226,7 +255,9 @@ export default function BloodTestReview({ testId }: { testId: number }) {
             const response = await api.post<BloodTestDetail>(
                 `/api/tyrimai/${testId}/reextract`
             )
+
             setTest(response.data)
+            setOpenedIndicators({})
             pollingStartedAt.current = Date.now()
         } catch (err) {
             setError(getErrorMessage(err, 'Nepavyko pradėti pakartotinio ištraukimo.'))
@@ -247,7 +278,9 @@ export default function BloodTestReview({ testId }: { testId: number }) {
             const response = await api.post<BloodTestDetail>(
                 `/api/tyrimai/${testId}/confirm`
             )
+
             setTest(response.data)
+            setOpenedIndicators({})
         } catch (err) {
             setError(getErrorMessage(err, 'Nepavyko patvirtinti tyrimo.'))
         } finally {

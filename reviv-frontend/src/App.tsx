@@ -7,6 +7,8 @@ import HomePage from './pages/HomePage'
 import Placeholder from './pages/Placeholder'
 import UploadPage from './pages/UploadPage'
 import ProfilePage from './pages/ProfilePage'
+import CatalogPage from './pages/CatalogPage'
+
 
 
 export default function App() {
@@ -34,6 +36,14 @@ export default function App() {
                 <Route index element={<HomePage />} />
                 <Route path="upload" element={<UploadPage />} />
                 <Route path="profile" element={<ProfilePage />} />
+                <Route
+                    path="catalog"
+                    element={
+                        <RequireAuth roles={['ADMIN']}>
+                            <CatalogPage />
+                        </RequireAuth>
+                    }
+                />
                 <Route
                     path="reports"
                     element={
