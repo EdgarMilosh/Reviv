@@ -1,0 +1,35 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-supplement-seed
+      author: reviv
+      changes:
+        - sql:
+            sql: |
+              -- Demonstraciniai duomenys (NFR-11). Dozės pagrįstos viešai skelbiamomis viršutinėmis ribomis, bet nėra medicininė rekomendacija.
+              INSERT INTO supplement (name, active_substance, form, dose_amount, dose_unit, max_daily_dose, missed_dose_rule, status, created_at, updated_at) VALUES
+                ('Vitaminas D3', 'Cholekalciferolis', 'LIQUID', 25, 'mcg', 100, 'Jei praleidote dozę, išgerkite ją tą pačią dieną. Kitą dieną dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Vitaminas C', 'Askorbo rūgštis', 'TABLET', 500, 'mg', 1000, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Vitaminas B12', 'Cianokobalaminas', 'TABLET', 250, 'mcg', 1000, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Folio rūgštis', 'Folio rūgštis', 'TABLET', 400, 'mcg', 1000, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Geležis', 'Geležies bisglicinatas', 'CAPSULE', 14, 'mg', 45, 'Jei praleidote dozę, kitą dozę gerkite įprastu laiku, nedvigubinkite ir nevartokite kartu su kalciu.', 'ACTIVE', now(), now()),
+                ('Cinkas', 'Cinko citratas', 'CAPSULE', 15, 'mg', 25, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Magnis', 'Magnio citratas', 'POWDER', 200, 'mg', 350, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Kalcis', 'Kalcio citratas', 'TABLET', 500, 'mg', 2500, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Omega-3', 'EPA ir DHA', 'CAPSULE', 1000, 'mg', 3000, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Vitaminas K2', 'Menachinonas-7 (MK-7)', 'CAPSULE', 100, 'mcg', 200, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Selenas', 'Selenometioninas', 'TABLET', 55, 'mcg', 255, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Varis', 'Vario bisglicinatas', 'CAPSULE', 1, 'mg', 5, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Vitaminas B6', 'Piridoksinas', 'TABLET', 10, 'mg', 12, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Jodas', 'Kalio jodidas', 'TABLET', 150, 'mcg', 600, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Koenzimas Q10', 'Ubichinonas', 'CAPSULE', 100, 'mg', 200, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now()),
+                ('Vitaminas E', 'Alfa-tokoferolis', 'CAPSULE', 10, 'mg', 300, 'Jei praleidote dozę, išgerkite kitą dozę įprastu laiku ir dozės nedvigubinkite.', 'ACTIVE', now(), now());
+              INSERT INTO supplement_interaction (supplement_a_id, supplement_b_id, type, recommendation) SELECT LEAST(a.id, b.id), GREATEST(a.id, b.id), 'Mažina pasisavimą', 'Vartoti skirtingu paros metu, bent 2 val. pertrauka.' FROM supplement a, supplement b WHERE a.name = 'Kalcis' AND b.name = 'Geležis';
+              INSERT INTO supplement_interaction (supplement_a_id, supplement_b_id, type, recommendation) SELECT LEAST(a.id, b.id), GREATEST(a.id, b.id), 'Konkuruoja dėl pasisavimo', 'Vartoti skirtingu paros metu.' FROM supplement a, supplement b WHERE a.name = 'Cinkas' AND b.name = 'Varis';
+              INSERT INTO supplement_interaction (supplement_a_id, supplement_b_id, type, recommendation) SELECT LEAST(a.id, b.id), GREATEST(a.id, b.id), 'Konkuruoja dėl pasisavimo', 'Vartoti skirtingu paros metu.' FROM supplement a, supplement b WHERE a.name = 'Kalcis' AND b.name = 'Magnis';
+              INSERT INTO supplement_interaction (supplement_a_id, supplement_b_id, type, recommendation) SELECT LEAST(a.id, b.id), GREATEST(a.id, b.id), 'Mažina pasisavimą', 'Vartoti skirtingu paros metu.' FROM supplement a, supplement b WHERE a.name = 'Geležis' AND b.name = 'Cinkas';
+              INSERT INTO supplement_interaction (supplement_a_id, supplement_b_id, type, recommendation) SELECT LEAST(a.id, b.id), GREATEST(a.id, b.id), 'Papildo vienas kitą', 'Galima vartoti kartu su riebiu maistu.' FROM supplement a, supplement b WHERE a.name = 'Vitaminas D3' AND b.name = 'Vitaminas K2';
+              INSERT INTO supplement_distributor (supplement_id, name, url) SELECT id, 'Demonstracinė vaistinė', 'https://example.com/vaistine/vitaminas-d3' FROM supplement WHERE name = 'Vitaminas D3';
+              INSERT INTO supplement_distributor (supplement_id, name, url) SELECT id, 'Demonstracinė parduotuvė', 'https://example.com/parduotuve/omega-3' FROM supplement WHERE name = 'Omega-3';
+              INSERT INTO supplement_distributor (supplement_id, name, url) SELECT id, 'Demonstracinė vaistinė', 'https://example.com/vaistine/magnis' FROM supplement WHERE name = 'Magnis';
+              INSERT INTO supplement_distributor (supplement_id, name, url) SELECT id, 'Demonstracinė sveikatos parduotuvė', 'https://example.com/sveikata/gelezis' FROM supplement WHERE name = 'Geležis';
+              INSERT INTO supplement_distributor (supplement_id, name, url) SELECT id, 'Demonstracinė parduotuvė', 'https://example.com/parduotuve/kalcis' FROM supplement WHERE name = 'Kalcis';
