@@ -91,7 +91,4 @@ public class BloodTestReviewController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(reviewService.getOriginalPdf(id, jwt));
     }
-
-
-
 }
