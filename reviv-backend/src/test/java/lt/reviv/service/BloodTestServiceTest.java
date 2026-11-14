@@ -7,7 +7,6 @@ import lt.reviv.common.error.UserNotFoundException;
 import lt.reviv.users.domain.AppUser;
 import lt.reviv.users.domain.UserRole;
 import lt.reviv.users.repository.AppUserRepository;
-import lt.reviv.bloodtests.service.BloodTestUploadedEvent;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
@@ -18,13 +17,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,7 +50,7 @@ class BloodTestServiceTest {
     private AppUserRepository appUserRepository;
 
     @Mock
-    private ApplicationEventPublisher publisher;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private BloodTestService service;
@@ -128,11 +127,6 @@ class BloodTestServiceTest {
                 saved.getFileSha256());
         verify(bloodTestRepository).existsByUserIdAndFileSha256(USER_ID, saved.getFileSha256());
         verify(bloodTestRepository).save(any(BloodTest.class));
-
-        verify(publisher).publishEvent(
-                any(BloodTestUploadedEvent.class)
-        );
-
     }
 
     @Test

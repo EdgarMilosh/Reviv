@@ -61,9 +61,11 @@ export default function BloodTestReview({ testId }: { testId: number }) {
         useState<number | null>(null)
     const [isReextracting, setIsReextracting] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
-    const pollingStartedAt = useRef<number | null>(null)
+    const pollingStartedAt = useRef(0)
 
-    const [showAnalysis, setShowAnalysis] = useState(false)
+    const [analysisTestId, setAnalysisTestId] = useState<number | null>(null)
+
+    const showAnalysis = analysisTestId === testId
     const [startingAnalysis, setStartingAnalysis] = useState(false)
 
     const loadTest = useCallback(async () => {
@@ -82,69 +84,57 @@ export default function BloodTestReview({ testId }: { testId: number }) {
 
 
     useEffect(() => {
-        let active = true
+        let cancelled = false
 
-        api.get<BloodTestDetail>(`/api/tyrimai/${testId}`)
+        pollingStartedAt.current = Date.now()
+
+        void api.get<BloodTestDetail>(
+            `/api/tyrimai/${testId}`
+        )
             .then(response => {
-                if (!active) return
+                if (cancelled) return
 
                 setTest(response.data)
                 setError('')
             })
-            .catch((err: unknown) => {
-                if (!active) return
-
-                setError(getErrorMessage(
-                    err,
-                    'Nepavyko gauti tyrimo duomenų.'
-                ))
+            .catch(err => {
+                if (!cancelled) {
+                    setError(
+                        getErrorMessage(
+                            err,
+                            'Nepavyko gauti tyrimo duomenų.'
+                        )
+                    )
+                }
             })
             .finally(() => {
-                if (active) {
+                if (!cancelled) {
                     setLoading(false)
                 }
             })
 
         return () => {
-            active = false
+            cancelled = true
         }
     }, [testId])
 
 
-
     useEffect(() => {
         const status = test?.status
-
-        if (
-            !status ||
-            !['UPLOADED', 'PROCESSING', 'RETRY_QUEUED'].includes(status)
-        ) {
-            pollingStartedAt.current = null
+        if (!status || !['UPLOADED', 'PROCESSING', 'RETRY_QUEUED'].includes(status)) {
             return
         }
 
-        if (pollingStartedAt.current === null) {
-            pollingStartedAt.current = Date.now()
-        }
-
         const intervalId = window.setInterval(() => {
-            if (
-                pollingStartedAt.current !== null &&
-                Date.now() - pollingStartedAt.current > 90_000
-            ) {
+            if (Date.now() - pollingStartedAt.current > 90_000) {
                 window.clearInterval(intervalId)
                 return
             }
-
             void loadTest()
         }, 2000)
 
         return () => window.clearInterval(intervalId)
     }, [test?.status, loadTest])
-
-    useEffect(() => {
-        setShowAnalysis(false)
-    }, [testId])
 
     const unresolvedIssues = (test?.issues ?? []).filter(issue => !issue.resolved)
     const isBusy = savingIndicatorId !== null || isReextracting || isConfirming
@@ -284,7 +274,6 @@ export default function BloodTestReview({ testId }: { testId: number }) {
             const response = await api.post<BloodTestDetail>(
                 `/api/tyrimai/${testId}/confirm`
             )
-
             setTest(response.data)
             setOpenedIndicators({})
         } catch (err) {
@@ -331,7 +320,7 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                 `/api/tyrimai/${testId}/analysis`
             )
 
-            setShowAnalysis(true)
+            setAnalysisTestId(testId)
 
         } catch (err) {
             setError(getErrorMessage(
@@ -355,13 +344,13 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                     <>
                         <button
                             type="button"
-                            onClick={() => setShowAnalysis(false)}
+                            onClick={() => setAnalysisTestId(null)}
                             className="review-pdf-button"
                         >
                             ← Grįžti prie rodiklių
                         </button>
 
-                        <BloodTestAnalysis testId={testId} />
+                        <BloodTestAnalysis key={testId} testId={testId} />
                     </>
                 ) : (
                     <BloodTestResults

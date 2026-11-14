@@ -52,16 +52,35 @@ export default function BloodTestAnalysis({
         setError('')
     }, [testId])
 
-    useEffect(() => {
-        setAnalysis(null)
-        setLoading(true)
 
-        void loadAnalysis()
-            .catch(() => {
-                setError('Nepavyko gauti analizės duomenų.')
+    useEffect(() => {
+        let cancelled = false
+
+        void api.get<AnalysisResult>(
+            `/api/tyrimai/${testId}/analysis`
+        )
+            .then(response => {
+                if (cancelled) return
+
+                setAnalysis(response.data)
+                setError('')
             })
-            .finally(() => setLoading(false))
-    }, [loadAnalysis])
+            .catch(() => {
+                if (!cancelled) {
+                    setError('Nepavyko gauti analizės duomenų.')
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setLoading(false)
+                }
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [testId])
+
 
 
     useEffect(() => {

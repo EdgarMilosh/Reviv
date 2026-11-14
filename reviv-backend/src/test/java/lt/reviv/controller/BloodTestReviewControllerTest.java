@@ -1,9 +1,9 @@
 package lt.reviv.controller;
 
-import lt.reviv.bloodtests.controller.BloodTestReviewController;
-import lt.reviv.bloodtests.dto.BloodTestDetailResponse;
-import lt.reviv.bloodtests.dto.MarkExtractionIssueRequest;
-import lt.reviv.bloodtests.service.BloodTestReviewService;
+import lt.reviv.bloodtests.controller.review.BloodTestReviewController;
+import lt.reviv.bloodtests.dto.review.BloodTestDetailResponse;
+import lt.reviv.bloodtests.dto.review.MarkExtractionIssueRequest;
+import lt.reviv.bloodtests.service.review.BloodTestReviewService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

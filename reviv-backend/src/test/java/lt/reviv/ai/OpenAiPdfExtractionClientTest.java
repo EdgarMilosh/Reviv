@@ -1,7 +1,7 @@
 package lt.reviv.ai;
 
-import lt.reviv.bloodtests.ai.ExtractedReport;
-import lt.reviv.bloodtests.ai.OpenAiPdfExtractionClient;
+import lt.reviv.bloodtests.ai.extraction.ExtractedReport;
+import lt.reviv.bloodtests.ai.extraction.OpenAiPdfExtractionClient;
 import lt.reviv.bloodtests.ai.OpenAiProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

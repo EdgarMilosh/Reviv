@@ -3,7 +3,7 @@ package lt.reviv.dto;
 import lt.reviv.bloodtests.domain.BloodTest;
 import lt.reviv.bloodtests.domain.BloodTestIndicator;
 import lt.reviv.bloodtests.domain.ExtractionIssue;
-import lt.reviv.bloodtests.dto.BloodTestDetailResponse;
+import lt.reviv.bloodtests.dto.review.BloodTestDetailResponse;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
