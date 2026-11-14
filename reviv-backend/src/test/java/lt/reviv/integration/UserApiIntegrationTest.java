@@ -4,15 +4,9 @@ import lt.reviv.users.repository.AppUserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
@@ -21,23 +15,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * US-1 integracinis testas: Spring Security taisyklės + tikra PostgreSQL (Docker, Testcontainers).
- * Reikia veikiančio Docker Desktop. Duomenų bazė kuriama kiekvieną kartą nauja, todėl
- * jūsų kūrimo duomenys (docker compose) nepaliečiami.
- */
-@SpringBootTest(properties = {
-        "DB_USER=test",
-        "DB_PASSWORD=test",
-        "reviv.admin-emails=admin@gmail.com"
-})
-@AutoConfigureMockMvc
-@Testcontainers
-class UserApiIntegrationTest {
-
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
+/** US-1 integracinis testas: Spring Security taisyklės + tikra PostgreSQL (Docker, Testcontainers). */
+class UserApiIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mvc;

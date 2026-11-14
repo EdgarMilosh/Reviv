@@ -5,3 +5,7 @@ databaseChangeLog:
       file: db/changelog/002-blood-test.yaml
   - include:
       file: db/changelog/003-profile.yaml
+  - include:
+      file: db/changelog/005-supplement-catalog.yaml
+  - include:
+      file: db/changelog/006-supplement-seed.yaml
