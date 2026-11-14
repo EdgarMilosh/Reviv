@@ -33,6 +33,11 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_EXTRACTION_ENABLED: ${OPENAI_EXTRACTION_ENABLED:-false}
+
+
     depends_on:
       db:
         condition: service_healthy
