@@ -1,0 +1,159 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-supplement-catalog
+      author: reviv
+      changes:
+        - createTable:
+            tableName: supplement
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: active_substance
+                  type: VARCHAR(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: form
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dose_amount
+                  type: NUMERIC(12,4)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dose_unit
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: max_daily_dose
+                  type: NUMERIC(12,4)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: missed_dose_rule
+                  type: VARCHAR(500)
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: ACTIVE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: |
+              ALTER TABLE supplement ADD CONSTRAINT ck_supplement_form CHECK (form IN ('CAPSULE', 'TABLET', 'POWDER', 'LIQUID'));
+              ALTER TABLE supplement ADD CONSTRAINT ck_supplement_status CHECK (status IN ('ACTIVE', 'INACTIVE'));
+              ALTER TABLE supplement ADD CONSTRAINT ck_supplement_dose CHECK (dose_amount > 0);
+              ALTER TABLE supplement ADD CONSTRAINT ck_supplement_max_dose CHECK (max_daily_dose > 0);
+              CREATE UNIQUE INDEX uk_supplement_name_lower ON supplement (lower(name));
+
+        - createTable:
+            tableName: supplement_distributor
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: supplement_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(120)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: url
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: supplement_distributor
+            baseColumnNames: supplement_id
+            referencedTableName: supplement
+            referencedColumnNames: id
+            constraintName: fk_supplement_distributor_supplement
+            onDelete: CASCADE
+        - createIndex:
+            tableName: supplement_distributor
+            indexName: idx_supplement_distributor_supplement
+            columns:
+              - column:
+                  name: supplement_id
+
+        - createTable:
+            tableName: supplement_interaction
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: supplement_a_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: supplement_b_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: recommendation
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: supplement_interaction
+            baseColumnNames: supplement_a_id
+            referencedTableName: supplement
+            referencedColumnNames: id
+            constraintName: fk_supplement_interaction_a
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: supplement_interaction
+            baseColumnNames: supplement_b_id
+            referencedTableName: supplement
+            referencedColumnNames: id
+            constraintName: fk_supplement_interaction_b
+            onDelete: CASCADE
+        - sql:
+            sql: |
+              ALTER TABLE supplement_interaction ADD CONSTRAINT ck_supplement_interaction_order CHECK (supplement_a_id < supplement_b_id);
+              ALTER TABLE supplement_interaction ADD CONSTRAINT uk_supplement_interaction_pair UNIQUE (supplement_a_id, supplement_b_id);
