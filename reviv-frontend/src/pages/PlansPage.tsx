@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { api } from '../api'
+import ReminderSettings from '../components/ReminderSettings'
 import './PlansPage.css'
 
 type PlanSummary = {
@@ -78,6 +79,7 @@ export default function PlansPage() {
                 </div>
                 <Link className="plans-new-link" to="/upload">+ Įkelti naują tyrimą</Link>
             </div>
+            <ReminderSettings />
 
             {!loading && !error && plans.length > 0 && (
                 <div className="plans-stats" aria-label="Planų suvestinė">

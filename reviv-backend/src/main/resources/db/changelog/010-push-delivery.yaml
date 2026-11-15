@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-push-delivery
+      author: reviv
+      changes:
+        - createTable:
+            tableName: push_delivery
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: kind
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: subject_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: delivery_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sent_at
+                  type: TIMESTAMP WITH TIME ZONE
+        - addUniqueConstraint:
+            tableName: push_delivery
+            columnNames: kind, subject_id, delivery_date
+            constraintName: uk_push_delivery_once
+        - sql:
+            sql: |
+              ALTER TABLE push_delivery ADD CONSTRAINT ck_push_delivery_kind CHECK (kind IN ('INTAKE', 'CYCLE_ENDING', 'CYCLE_ENDED'));
+              ALTER TABLE push_delivery ADD CONSTRAINT ck_push_delivery_status CHECK (status IN ('PENDING', 'SENT', 'NO_SUBSCRIPTION', 'FAILED'));

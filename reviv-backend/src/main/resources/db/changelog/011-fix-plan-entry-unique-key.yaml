@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-fix-plan-entry-unique-key
+      author: reviv
+      changes:
+        - sql:
+            sql: |
+              ALTER TABLE consumption_plan_entry DROP CONSTRAINT uk_plan_entry_recommendation;
+              ALTER TABLE consumption_plan_entry ADD CONSTRAINT uk_plan_entry_recommendation UNIQUE (plan_id, recommendation_id);

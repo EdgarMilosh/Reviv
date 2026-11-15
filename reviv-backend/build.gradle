@@ -50,6 +50,10 @@ dependencies {
     //pdf
     implementation 'org.apache.pdfbox:pdfbox:3.0.8'
     implementation 'org.springframework.boot:spring-boot-starter-restclient'
+
+    // Web Push
+    implementation 'nl.martijndwars:web-push:5.1.1'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
 }
 
 tasks.named('test') {

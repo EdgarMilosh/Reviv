@@ -47,6 +47,10 @@ services:
       OPENAI_PLAN_MODEL: ${OPENAI_PLAN_MODEL:-gpt-6-luna}
       OPENAI_PLAN_MAX_OUTPUT_TOKENS: ${OPENAI_PLAN_MAX_OUTPUT_TOKENS:-6500}
 
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@reviv.local}
+
     depends_on:
       db:
         condition: service_healthy
