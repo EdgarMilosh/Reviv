@@ -3,10 +3,15 @@ package lt.reviv.bloodtests.service.review;
 
 import lt.reviv.bloodtests.domain.BloodTest;
 import lt.reviv.bloodtests.dto.review.BloodTestDetailResponse;
-
+import lt.reviv.bloodtests.dto.review.BloodTestListResponse;
 import lt.reviv.bloodtests.repository.BloodTestRepository;
 import lt.reviv.bloodtests.repository.BloodTestIndicatorRepository;
+import lt.reviv.bloodtests.repository.BloodTestAnalysisRepository;
 import lt.reviv.bloodtests.repository.ExtractionIssueRepository;
+import lt.reviv.bloodtests.repository.IndicatorExplanationRepository;
+import lt.reviv.bloodtests.repository.plan.ConsumptionPlanRepository;
+import lt.reviv.bloodtests.repository.rec.RecommendationGenerationRepository;
+import lt.reviv.bloodtests.repository.rec.SupplementRecommendationRepository;
 
 import lt.reviv.users.domain.AppUser;
 import lt.reviv.users.repository.AppUserRepository;
@@ -24,6 +29,9 @@ import lt.reviv.bloodtests.dto.review.MarkExtractionIssueRequest;
 import lt.reviv.bloodtests.ai.OpenAiProperties;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.util.List;
+import java.util.Locale;
+
 
 @Service
 public class BloodTestReviewService {
@@ -31,9 +39,41 @@ public class BloodTestReviewService {
     private final BloodTestRepository bloodTestRepository;
     private final BloodTestIndicatorRepository indicatorRepository;
     private final ExtractionIssueRepository issueRepository;
+    private final BloodTestAnalysisRepository analysisRepository;
+    private final IndicatorExplanationRepository explanationRepository;
+    private final RecommendationGenerationRepository recommendationGenerationRepository;
+    private final SupplementRecommendationRepository supplementationRecommendationRepository;
+    private final ConsumptionPlanRepository consumptionPlanRepository;
     private final AppUserRepository appUserRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final OpenAiProperties aiProperties;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public BloodTestReviewService(
+            BloodTestRepository bloodTestRepository,
+            BloodTestIndicatorRepository indicatorRepository,
+            ExtractionIssueRepository issueRepository,
+            BloodTestAnalysisRepository analysisRepository,
+            IndicatorExplanationRepository explanationRepository,
+            RecommendationGenerationRepository recommendationGenerationRepository,
+            SupplementRecommendationRepository supplementationRecommendationRepository,
+            ConsumptionPlanRepository consumptionPlanRepository,
+            AppUserRepository appUserRepository,
+            ApplicationEventPublisher eventPublisher,
+            OpenAiProperties aiProperties
+    ) {
+        this.bloodTestRepository = bloodTestRepository;
+        this.indicatorRepository = indicatorRepository;
+        this.issueRepository = issueRepository;
+        this.analysisRepository = analysisRepository;
+        this.explanationRepository = explanationRepository;
+        this.recommendationGenerationRepository = recommendationGenerationRepository;
+        this.supplementationRecommendationRepository = supplementationRecommendationRepository;
+        this.consumptionPlanRepository = consumptionPlanRepository;
+        this.appUserRepository = appUserRepository;
+        this.eventPublisher = eventPublisher;
+        this.aiProperties = aiProperties;
+    }
 
     public BloodTestReviewService(
             BloodTestRepository bloodTestRepository,
@@ -43,14 +83,38 @@ public class BloodTestReviewService {
             ApplicationEventPublisher eventPublisher,
             OpenAiProperties aiProperties
     ) {
-        this.bloodTestRepository = bloodTestRepository;
-        this.indicatorRepository = indicatorRepository;
-        this.issueRepository = issueRepository;
-        this.appUserRepository = appUserRepository;
-        this.eventPublisher = eventPublisher;
-        this.aiProperties = aiProperties;
+        this(
+                bloodTestRepository,
+                indicatorRepository,
+                issueRepository,
+                null,
+                null,
+                null,
+                null,
+                null,
+                appUserRepository,
+                eventPublisher,
+                aiProperties
+        );
     }
 
+
+    @Transactional(readOnly = true)
+    public List<BloodTestListResponse> listTests(
+            Jwt jwt,
+            String filter
+    ) {
+        AppUser user = appUserRepository
+                .findByGoogleId(jwt.getSubject())
+                .orElseThrow(UserNotFoundException::new);
+
+        return bloodTestRepository
+                .findAllByUserIdOrderByUploadedAtDesc(user.getId())
+                .stream()
+                .filter(test -> matchesFilter(test, filter))
+                .map(BloodTestListResponse::from)
+                .toList();
+    }
 
     @Transactional(readOnly = true)
     public BloodTestDetailResponse getDetails(
@@ -89,6 +153,69 @@ public class BloodTestReviewService {
         );
     }
 
+    @Transactional
+    public void deleteTest(Long bloodTestId, Jwt jwt) {
+        AppUser user = appUserRepository
+                .findByGoogleId(jwt.getSubject())
+                .orElseThrow(UserNotFoundException::new);
+
+        BloodTest bloodTest = bloodTestRepository
+                .findById(bloodTestId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Tyrimas nerastas."
+                ));
+
+        if (!bloodTest.getUserId().equals(user.getId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Tyrimas nerastas."
+            );
+        }
+
+        issueRepository.deleteByBloodTestId(bloodTestId);
+        indicatorRepository.deleteByBloodTestId(bloodTestId);
+        analysisRepository.findByBloodTestId(bloodTestId)
+                .ifPresent(analysis -> {
+                    explanationRepository.findByAnalysisIdOrderByIdAsc(analysis.getId())
+                            .forEach(explanationRepository::delete);
+                    analysisRepository.delete(analysis);
+                });
+
+        recommendationGenerationRepository
+                .findByBloodTestIdOrderByCreatedAtDescIdDesc(bloodTestId)
+                .forEach(generation -> {
+                    supplementationRecommendationRepository.findByGenerationIdOrderByIdAsc(generation.getId())
+                            .forEach(supplementationRecommendationRepository::delete);
+                    recommendationGenerationRepository.delete(generation);
+                });
+
+        consumptionPlanRepository.findAll().stream()
+                .filter(plan -> plan.getBloodTestId().equals(bloodTestId))
+                .forEach(consumptionPlanRepository::delete);
+
+        bloodTestRepository.delete(bloodTest);
+    }
+
+
+    private boolean matchesFilter(BloodTest test, String filter) {
+        if (filter == null || filter.isBlank()) {
+            return true;
+        }
+
+        String normalized = filter.trim();
+        String lower = normalized.toLowerCase(Locale.ROOT);
+
+        if (test.getLaboratory() != null && test.getLaboratory().toLowerCase(Locale.ROOT).contains(lower)) {
+            return true;
+        }
+
+        if (test.getFileName() != null && test.getFileName().toLowerCase(Locale.ROOT).contains(lower)) {
+            return true;
+        }
+
+        return false;
+    }
 
     @Transactional
     public BloodTestDetailResponse markIssue(

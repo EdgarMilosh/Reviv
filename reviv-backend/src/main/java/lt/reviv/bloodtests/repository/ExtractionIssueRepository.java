@@ -27,4 +27,6 @@ public interface ExtractionIssueRepository
             Long id,
             Long bloodTestId
     );
+
+    void deleteByBloodTestId(Long bloodTestId);
 }
