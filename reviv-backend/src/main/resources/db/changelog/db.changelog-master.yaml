@@ -17,3 +17,5 @@ databaseChangeLog:
       file: db/changelog/007-recommendations.yaml
   - include:
       file: db/changelog/008-consumption-plan.yaml
+  - include:
+      file: db/changelog/009-push-subscription.yaml
