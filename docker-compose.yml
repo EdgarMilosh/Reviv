@@ -39,6 +39,10 @@ services:
       OPENAI_ANALYSIS_ENABLED: ${OPENAI_ANALYSIS_ENABLED:-false}
       OPENAI_ANALYSIS_MODEL: ${OPENAI_ANALYSIS_MODEL:-gpt-6-luna}
 
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: qwen3:14b
+      OLLAMA_RECOMMENDATIONS_ENABLED: "true"
+
     depends_on:
       db:
         condition: service_healthy

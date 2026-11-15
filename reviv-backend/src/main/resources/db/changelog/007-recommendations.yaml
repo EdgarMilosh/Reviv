@@ -1,0 +1,182 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-us9-recommendation-generations
+      author: reviv
+      changes:
+        - createTable:
+            tableName: recommendation_generation
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: blood_test_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ai_model
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: profile_snapshot_json
+                  type: TEXT
+              - column:
+                  name: criticality_not_assessed
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: recommendation_generation
+            baseColumnNames: blood_test_id
+            referencedTableName: blood_test
+            referencedColumnNames: id
+            constraintName: fk_rec_generation_blood_test
+            onDelete: CASCADE
+        - createIndex:
+            tableName: recommendation_generation
+            indexName: idx_rec_generation_test_created
+            columns:
+              - column:
+                  name: blood_test_id
+                  type: BIGINT
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+
+  - changeSet:
+      id: 008-us9-recommendation-items
+      author: reviv
+      changes:
+        - createTable:
+            tableName: supplement_recommendation
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: generation_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: indicator_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: supplement_id
+                  type: BIGINT
+              - column:
+                  name: supplement_name_snapshot
+                  type: VARCHAR(120)
+              - column:
+                  name: recommendation_status
+                  type: VARCHAR(24)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: decision
+                  type: VARCHAR(16)
+                  defaultValue: PENDING
+                  constraints:
+                    nullable: false
+              - column:
+                  name: proposed_daily_dose
+                  type: NUMERIC(12,4)
+              - column:
+                  name: dose_unit
+                  type: VARCHAR(20)
+              - column:
+                  name: duration_days
+                  type: INTEGER
+              - column:
+                  name: reason
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: risk_warnings_json
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: needs_specialist_review
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: decided_at
+                  type: TIMESTAMP WITH TIME ZONE
+        - addForeignKeyConstraint:
+            baseTableName: supplement_recommendation
+            baseColumnNames: generation_id
+            referencedTableName: recommendation_generation
+            referencedColumnNames: id
+            constraintName: fk_rec_item_generation
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: supplement_recommendation
+            baseColumnNames: indicator_id
+            referencedTableName: blood_test_indicator
+            referencedColumnNames: id
+            constraintName: fk_rec_item_indicator
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: supplement_recommendation
+            baseColumnNames: supplement_id
+            referencedTableName: supplement
+            referencedColumnNames: id
+            constraintName: fk_rec_item_supplement
+            onDelete: SET NULL
+        - addUniqueConstraint:
+            tableName: supplement_recommendation
+            columnNames: generation_id, indicator_id
+            constraintName: uk_rec_generation_indicator
+        - createIndex:
+            tableName: supplement_recommendation
+            indexName: idx_rec_item_supplement
+            columns:
+              - column:
+                  name: supplement_id
+                  type: BIGINT
+        - sql:
+            sql: |
+              ALTER TABLE supplement_recommendation
+                ADD CONSTRAINT ck_rec_status
+                CHECK (recommendation_status IN ('SUGGESTED', 'NOT_RECOMMENDED', 'NEEDS_REVIEW'));
+              ALTER TABLE supplement_recommendation
+                ADD CONSTRAINT ck_rec_decision
+                CHECK (decision IN ('PENDING', 'ACCEPTED', 'REJECTED'));
+              ALTER TABLE supplement_recommendation
+                ADD CONSTRAINT ck_rec_dose_positive
+                CHECK (proposed_daily_dose IS NULL OR proposed_daily_dose > 0);
+              ALTER TABLE supplement_recommendation
+                ADD CONSTRAINT ck_rec_duration_positive
+                CHECK (duration_days IS NULL OR duration_days > 0);
+              ALTER TABLE supplement_recommendation
+                ADD CONSTRAINT ck_rec_non_suggestion_fields
+                CHECK (recommendation_status = 'SUGGESTED'
+                  OR (supplement_id IS NULL AND proposed_daily_dose IS NULL
+                    AND dose_unit IS NULL AND duration_days IS NULL));
