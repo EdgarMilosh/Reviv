@@ -1,0 +1,52 @@
+.reminder-settings {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px 24px;
+    padding: 16px 20px;
+    margin-bottom: 22px;
+    background: #ffffff;
+    border: 1px solid #d9e2e7;
+    border-radius: 12px;
+    box-shadow: 0 3px 14px #0f172a07;
+}
+
+.reminder-settings h2 {
+    margin: 0 0 4px;
+    font-size: 17px;
+    color: #111827;
+}
+
+.reminder-settings p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.reminder-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.reminder-settings .reminder-message,
+.reminder-settings .reminder-error {
+    flex-basis: 100%;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.reminder-settings .reminder-message {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+}
+
+.reminder-settings .reminder-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}

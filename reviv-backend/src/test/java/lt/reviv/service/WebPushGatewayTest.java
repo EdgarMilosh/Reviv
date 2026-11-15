@@ -7,9 +7,12 @@ import lt.reviv.push.service.PushMessage;
 import lt.reviv.push.service.WebPushGateway;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.security.Security;
 
-/** US-12: without VAPID keys nothing is sent and nothing crashes. */
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+/** US-12: without VAPID keys nothing is sent, and the crypto provider is ready before the first send. */
 class WebPushGatewayTest {
 
     @Test
@@ -21,5 +24,13 @@ class WebPushGatewayTest {
                 new PushMessage("Title", "Body", "/"));
 
         assertEquals(PushGateway.Result.FAILED, result);
+    }
+
+    @Test
+    void TA59_bouncyCastleProviderIsRegisteredBeforeTheFirstSend() {
+        new WebPushGateway(new PushProperties("", "", ""));
+
+        assertNotNull(Security.getProvider("BC"),
+                "The web-push library looks the provider up by the name BC when it parses subscription keys");
     }
 }

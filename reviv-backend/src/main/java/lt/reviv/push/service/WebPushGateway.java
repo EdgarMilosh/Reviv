@@ -19,6 +19,14 @@ public class WebPushGateway implements PushGateway {
 
     private static final Logger log = LoggerFactory.getLogger(WebPushGateway.class);
 
+    static {
+        // The library looks up the "BC" provider by name when it parses a subscription's keys,
+        // so BouncyCastle must be registered before the first Notification is created.
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+    }
+
     private final PushProperties properties;
     private volatile PushService pushService;
 
@@ -48,7 +56,7 @@ public class WebPushGateway implements PushGateway {
             log.warn("Web Push service returned {}", status);
             return Result.FAILED;
         } catch (Exception e) {
-            log.warn("Failed to send Web Push notification: {}", e.getMessage());
+            log.warn("Failed to send Web Push notification", e);
             return Result.FAILED;
         }
     }
@@ -58,9 +66,6 @@ public class WebPushGateway implements PushGateway {
         if (current == null) {
             synchronized (this) {
                 if (pushService == null) {
-                    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-                        Security.addProvider(new BouncyCastleProvider());
-                    }
                     pushService = new PushService(properties.publicKey(), properties.privateKey(), properties.subject());
                 }
                 current = pushService;
