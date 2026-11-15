@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
-/** US-11 OpenAI responses are mocked; no network, tokens or API key required. */
+
 class OpenAiPlanClientTest {
     private MockRestServiceServer server;
     private JsonMapper mapper;
@@ -178,9 +178,13 @@ class OpenAiPlanClientTest {
     @Test
     void tooLongOrNegativeBreakIsRejected() {
         output(PLAN.replace("\"breakDays\":null", "\"breakDays\":-1"));
-        assertHttp(HttpStatus.BAD_GATEWAY, () -> client.suggest(accepted(), List.of()));
         output(PLAN.replace("\"breakDays\":null", "\"breakDays\":366"));
-        assertHttp(HttpStatus.BAD_GATEWAY, () -> client.suggest(accepted(), List.of()));
+
+        assertHttp(HttpStatus.BAD_GATEWAY,
+                () -> client.suggest(accepted(), List.of()));
+        assertHttp(HttpStatus.BAD_GATEWAY,
+                () -> client.suggest(accepted(), List.of()));
+
         server.verify();
     }
 
