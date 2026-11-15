@@ -16,7 +16,7 @@ public class OpenAiRestClientConfig {
         var factory = new SimpleClientHttpRequestFactory();
 
         factory.setConnectTimeout(Duration.ofSeconds(10));
-        factory.setReadTimeout(Duration.ofSeconds(60));
+        factory.setReadTimeout(Duration.ofSeconds(120));
 
         return builder
                 .requestFactory(factory)

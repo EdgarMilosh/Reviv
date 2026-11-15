@@ -1,0 +1,38 @@
+.plan-page { margin-top: 28px; padding: 24px; background: #fff; border: 1px solid #d1d5db; border-radius: 12px; color: #1f2937; }
+.plan-back { border: 1px solid #0f766e; background: #fff; color: #0f766e; border-radius: 6px; padding: 9px 14px; cursor: pointer; margin-bottom: 20px; }
+.plan-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.plan-heading h2 { margin: 0; color: #111827; }
+.plan-heading p { margin: 8px 0 0; color: #64748b; font-size: 14px; }
+.plan-ai { border-radius: 20px; background: #e0e7ff; padding: 7px 12px; color: #3730a3; font-size: 12px; }
+.plan-disclaimer { border: 1px solid #e8c75b; background: #fff8e1; border-radius: 8px; padding: 14px; font-size: 13px; margin: 22px 0; line-height: 1.5; }
+.plan-section-title { margin: 22px 0 12px; font-size: 18px; }
+.plan-timeline { border: 1px solid #d1d5db; border-radius: 9px; overflow: hidden; }
+.plan-slot { display: grid; grid-template-columns: 126px 1fr; gap: 14px; padding: 13px 18px; border-bottom: 1px solid #e5e7eb; }
+.plan-slot:last-child { border-bottom: 0; }
+.plan-slot-label { display: flex; flex-direction: column; gap: 4px; }
+.plan-slot-label small { color: #64748b; }
+.plan-slot-items p { margin: 0 0 6px; font-size: 14px; }
+.plan-muted { color: #94a3b8; font-size: 14px; }
+.plan-entries { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+.plan-entry { border: 1px solid #d1d5db; border-radius: 10px; padding: 18px; min-width: 0; }
+.plan-entry-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.plan-entry-heading h4 { margin: 0; font-size: 17px; }
+.plan-entry-heading span { font-size: 12px; color: #64748b; }
+.plan-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.plan-form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: #374151; }
+.plan-form input, .plan-form select { width: 100%; min-width: 0; border: 1px solid #cbd5e1; border-radius: 6px; padding: 9px; background: white; color: #111827; font: inherit; }
+.plan-notes { font-size: 13px; margin-top: 14px; }
+.plan-warnings { margin: 10px 0; padding: 10px 10px 10px 30px; background: #fff8e1; font-size: 12px; border-radius: 7px; }
+.plan-warnings li { margin: 3px 0; }
+.plan-reminder { font-size: 12px; color: #475569; }
+.plan-save, .plan-activate { cursor: pointer; background: #0f766e; border: 1px solid #0f766e; color: white; border-radius: 7px; padding: 11px 16px; font-weight: 600; }
+.plan-save { margin-top: 14px; }
+.plan-save:disabled, .plan-activate:disabled { opacity: .5; cursor: wait; }
+.plan-footer { margin-top: 22px; display: flex; justify-content: flex-end; }
+.plan-error { color: #9f1239; margin-top: 16px; }
+.plan-success, .plan-active { color: #0f766e; font-weight: 600; font-size: 14px; margin-top: 16px; }
+@media (max-width: 850px) { .plan-page { padding: 14px; } .plan-entries { grid-template-columns: 1fr; } .plan-form { grid-template-columns: 1fr; } .plan-slot { grid-template-columns: 90px 1fr; gap: 8px; padding: 12px; } }
+
+.plan-dose-limit {font-size: 11px; color: #64748b; font-weight: normal;}
+
+.plan-unsaved { color: #9a3412; font-size: 13px; margin-right: 18px; }

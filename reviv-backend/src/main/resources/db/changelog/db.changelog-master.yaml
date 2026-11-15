@@ -15,3 +15,5 @@ databaseChangeLog:
       file: db/changelog/006-supplement-seed.yaml
   - include:
       file: db/changelog/007-recommendations.yaml
+  - include:
+      file: db/changelog/008-consumption-plan.yaml

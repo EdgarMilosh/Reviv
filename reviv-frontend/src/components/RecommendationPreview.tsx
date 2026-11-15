@@ -82,6 +82,8 @@ type Props = {
     saved: LatestRecommendationsResponse | null
     onDecision: (recommendationId: number, decision: 'ACCEPTED' | 'REJECTED') => void
     savingRecommendationId: number | null
+    onOpenPlan: () => void
+    openingPlan: boolean
 }
 
 export default function RecommendationPreview({
@@ -92,10 +94,15 @@ export default function RecommendationPreview({
     saved,
     onDecision,
     savingRecommendationId,
+    onOpenPlan,
+    openingPlan,
 }: Props) {
     const decisionsByIndicator = new Map(
         saved?.items.map(item => [item.indicatorId, item]) ?? []
     )
+    const suggested = saved?.items.filter(item => item.recommendationStatus === 'SUGGESTED') ?? []
+    const acceptedCount = suggested.filter(item => item.decision === 'ACCEPTED').length
+    const allDecided = suggested.length > 0 && suggested.every(item => item.decision !== 'PENDING')
     return (
         <section className="rec-page">
             <button className="rec-back" type="button" onClick={onBack}>
@@ -239,6 +246,16 @@ export default function RecommendationPreview({
                 </div>
             )}
 
+            <div className="rec-to-plan">
+                <div>
+                    <strong>Sudaryti papildų vartojimo planą</strong>
+                    <p>{acceptedCount} priimtų papildų. Prieš tęsdami priimkite arba atmeskite visus pasiūlymus.</p>
+                </div>
+                <button type="button" disabled={!allDecided || acceptedCount === 0 || openingPlan || regenerating || savingRecommendationId !== null}
+                    onClick={onOpenPlan}>
+                    {openingPlan ? 'Kuriamas planas...' : 'Gauti vartojimo planą'}
+                </button>
+            </div>
             <p className="rec-generated">Sugeneruota DI · nepatvirtinti demonstraciniai pasiūlymai</p>
         </section>
     )

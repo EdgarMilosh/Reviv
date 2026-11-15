@@ -1,0 +1,52 @@
+.plans-library { color: #1f2937; max-width: 1320px; margin: 0 auto; }
+.plans-topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 22px; flex-wrap: wrap; margin-bottom: 24px; }
+.plans-topbar h1 { margin: 0; font-size: 29px; color: #111827; }
+.plans-topbar p { color: #64748b; margin: 9px 0 0; line-height: 1.5; }
+.plans-new-link { background: #0f766e; color: white; padding: 11px 16px; border-radius: 8px; text-decoration: none; font-weight: 600; white-space: nowrap; }
+.plans-new-link:hover, .plans-open:hover { background: #115e59; }
+.plans-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 26px; }
+.plans-stats > div { display: flex; flex-direction: column; gap: 5px; padding: 18px 22px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; }
+.plans-stats strong { font-size: 29px; color: #0f766e; }
+.plans-stats span { color: #64748b; font-size: 14px; }
+.plans-controls { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; }
+.plans-filter { display: flex; align-items: center; gap: 8px; }
+.plans-filter button { cursor: pointer; background: #fff; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 15px; font-weight: 600; }
+.plans-filter button.selected { background: #0f766e; color: #fff; border-color: #0f766e; }
+.plans-search { display: flex; flex-direction: column; gap: 6px; min-width: 260px; font-size: 13px; color: #64748b; font-weight: 600; }
+.plans-search input { background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font: inherit; font-size: 14px; }
+.plans-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.plans-card { border: 1px solid #d9e2e7; background: #fff; border-radius: 13px; padding: 22px; min-width: 0; display: flex; flex-direction: column; gap: 19px; box-shadow: 0 3px 14px #0f172a07; }
+.plans-card-header { display: flex; gap: 10px; justify-content: space-between; align-items: flex-start; }
+.plans-card-header h2 { margin: 0 0 6px; font-size: 19px; color: #111827; }
+.plans-card-date { color: #64748b; font-size: 13px; }
+.plans-status { font-size: 12px; font-weight: 700; white-space: nowrap; border-radius: 20px; padding: 6px 10px; }
+.plans-status.is-active { background: #d1fae5; color: #065f46; }
+.plans-status.is-draft { background: #fef3c7; color: #92400e; }
+.plans-card-meta { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.plans-card-meta > div { display: grid; grid-template-columns: 145px minmax(0, 1fr); gap: 12px; font-size: 13px; }
+.plans-card-meta dt { color: #64748b; }
+.plans-card-meta dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.plans-supplements-title { display: block; color: #64748b; font-size: 13px; margin-bottom: 10px; }
+.plans-supplements > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.plans-supplement-chip { padding: 6px 10px; border-radius: 30px; background: #f1f5f9; font-size: 12px; font-weight: 600; }
+.plans-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: auto; }
+.plans-open { display: inline-flex; background: #0f766e; color: white; font-weight: 600; text-decoration: none; padding: 10px 14px; border-radius: 7px; }
+.plans-source { color: #0f766e; font-weight: 600; font-size: 13px; text-decoration: none; }
+.plans-source:hover { text-decoration: underline; }
+.plans-message { padding: 25px; background: #fff; border: 1px solid #d1d5db; border-radius: 12px; line-height: 1.6; }
+.plans-message a { color: #0f766e; font-weight: 600; }
+.plans-empty h2 { margin-top: 0; }
+.plans-error { color: #9f1239; border-color: #fecdd3; }
+.plans-error button { border: 0; border-radius: 6px; padding: 9px 14px; color: #fff; background: #0f766e; cursor: pointer; }
+@media (max-width: 1080px) { .plans-grid { grid-template-columns: 1fr; } }
+@media (max-width: 620px) {
+    .plans-stats { gap: 8px; }
+    .plans-stats > div { padding: 13px; }
+    .plans-stats strong { font-size: 23px; }
+    .plans-stats span { font-size: 12px; }
+    .plans-topbar h1 { font-size: 24px; }
+    .plans-card { padding: 16px; }
+    .plans-card-meta > div { grid-template-columns: 115px minmax(0, 1fr); }
+    .plans-search { width: 100%; min-width: 0; }
+    .plans-filter { flex-wrap: wrap; }
+}

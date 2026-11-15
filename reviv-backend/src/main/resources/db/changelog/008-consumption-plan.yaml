@@ -1,0 +1,66 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-us11-plan
+      author: reviv
+      changes:
+        - createTable:
+            tableName: consumption_plan
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: blood_test_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: recommendation_generation_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: ai_model, type: VARCHAR(100), constraints: { nullable: false } }
+              - column: { name: status, type: VARCHAR(16), constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP WITH TIME ZONE, constraints: { nullable: false } }
+              - column: { name: updated_at, type: TIMESTAMP WITH TIME ZONE, constraints: { nullable: false } }
+        - addForeignKeyConstraint: { baseTableName: consumption_plan, baseColumnNames: blood_test_id, referencedTableName: blood_test, referencedColumnNames: id, constraintName: fk_plan_test, onDelete: CASCADE }
+        - addForeignKeyConstraint: { baseTableName: consumption_plan, baseColumnNames: recommendation_generation_id, referencedTableName: recommendation_generation, referencedColumnNames: id, constraintName: fk_plan_generation, onDelete: CASCADE }
+        - createIndex:
+            tableName: consumption_plan
+            indexName: idx_plan_test_generation
+            columns:
+              - column: { name: blood_test_id, type: BIGINT }
+              - column: { name: recommendation_generation_id, type: BIGINT }
+        - addUniqueConstraint: { tableName: consumption_plan, columnNames: recommendation_generation_id, constraintName: uk_plan_generation }
+  - changeSet:
+      id: 010-us11-entries
+      author: reviv
+      changes:
+        - createTable:
+            tableName: consumption_plan_entry
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: plan_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: recommendation_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: supplement_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: supplement_name_snapshot, type: VARCHAR(120), constraints: { nullable: false } }
+              - column: { name: daily_dose, type: "NUMERIC(12,4)", constraints: { nullable: false } }
+              - column: { name: dose_unit, type: VARCHAR(20), constraints: { nullable: false } }
+              - column: { name: day_part, type: VARCHAR(20), constraints: { nullable: false } }
+              - column: { name: meal_relation, type: VARCHAR(20), constraints: { nullable: false } }
+              - column: { name: start_date, type: DATE, constraints: { nullable: false } }
+              - column: { name: end_date, type: DATE, constraints: { nullable: false } }
+              - column: { name: break_days, type: INTEGER }
+              - column: { name: notes, type: VARCHAR(800) }
+        - addForeignKeyConstraint: { baseTableName: consumption_plan_entry, baseColumnNames: plan_id, referencedTableName: consumption_plan, referencedColumnNames: id, constraintName: fk_plan_entry_plan, onDelete: CASCADE }
+        - addForeignKeyConstraint: { baseTableName: consumption_plan_entry, baseColumnNames: recommendation_id, referencedTableName: supplement_recommendation, referencedColumnNames: id, constraintName: fk_plan_entry_rec }
+        - addForeignKeyConstraint: { baseTableName: consumption_plan_entry, baseColumnNames: supplement_id, referencedTableName: supplement, referencedColumnNames: id, constraintName: fk_plan_entry_supplement }
+        - addUniqueConstraint: { tableName: consumption_plan_entry, columnNames: plan_id, recommendation_id, constraintName: uk_plan_entry_recommendation }
+        - sql:
+            sql: |
+              ALTER TABLE consumption_plan_entry ADD CONSTRAINT ck_plan_dose_positive CHECK (daily_dose > 0);
+              ALTER TABLE consumption_plan_entry ADD CONSTRAINT ck_plan_dates CHECK (end_date >= start_date);
+              ALTER TABLE consumption_plan_entry ADD CONSTRAINT ck_plan_break CHECK (break_days IS NULL OR break_days BETWEEN 0 AND 365);
+  - changeSet:
+      id: 011-us11-reminder-definitions
+      author: reviv
+      changes:
+        - createTable:
+            tableName: consumption_plan_reminder
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: plan_entry_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: reminder_time, type: TIME, constraints: { nullable: false } }
+              - column: { name: enabled, type: BOOLEAN, constraints: { nullable: false } }
+        - addForeignKeyConstraint: { baseTableName: consumption_plan_reminder, baseColumnNames: plan_entry_id, referencedTableName: consumption_plan_entry, referencedColumnNames: id, constraintName: fk_plan_reminder_entry, onDelete: CASCADE }
+        - addUniqueConstraint: { tableName: consumption_plan_reminder, columnNames: plan_entry_id, constraintName: uk_plan_reminder_entry }
