@@ -1,6 +1,7 @@
 package lt.reviv.bloodtests.controller.review;
 
 import lt.reviv.bloodtests.dto.review.BloodTestDetailResponse;
+import lt.reviv.bloodtests.dto.review.BloodTestListResponse;
 import lt.reviv.bloodtests.service.review.BloodTestReviewService;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,11 +15,13 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/tyrimai")
@@ -32,6 +35,14 @@ public class BloodTestReviewController {
         this.reviewService = reviewService;
     }
 
+    @GetMapping
+    public List<BloodTestListResponse> listTests(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(name = "filter", required = false) String filter
+    ) {
+        return reviewService.listTests(jwt, filter);
+    }
+
     @GetMapping("/{id}")
     public BloodTestDetailResponse getBloodTest(
             @PathVariable Long id,
@@ -40,6 +51,13 @@ public class BloodTestReviewController {
         return reviewService.getDetails(id, jwt);
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteBloodTest(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        reviewService.deleteTest(id, jwt);
+    }
 
     @PostMapping("/{id}/issues")
     public BloodTestDetailResponse markIssue(

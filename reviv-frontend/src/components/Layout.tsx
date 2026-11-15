@@ -14,6 +14,7 @@ const ALL: Role[] = ['USER', 'ADMIN']
 const MENU: MenuItem[] = [
     { to: '/', label: 'Pradžia', roles: ALL },
     { to: '/upload', label: 'Įkelti tyrimą', roles: ALL },
+    { to: '/tyrimai', label: 'Tyrimai', roles: ALL },
     { to: '/plans', label: 'Mano planai', roles: ALL },
     { to: '/catalog', label: 'Papildų katalogas', roles: ['ADMIN'] },
     { to: '/reports', label: 'Ataskaitos', roles: ['ADMIN'] },
