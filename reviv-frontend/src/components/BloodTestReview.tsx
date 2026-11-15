@@ -4,6 +4,11 @@ import { api } from '../api'
 import './BloodTestReview.css'
 import BloodTestResults, { type BloodIndicator } from './BloodTestResults'
 import BloodTestAnalysis from './BloodTestAnalysis'
+import RecommendationPreview, {
+    type RecommendationPreviewResponse,
+    type LatestRecommendationsResponse,
+    type SavedRecommendationItem,
+} from './RecommendationPreview'
 
 type Issue = {
     id: number
@@ -50,6 +55,63 @@ function getErrorMessage(err: unknown, fallback: string): string {
     return fallback
 }
 
+// Pakartotinai atidarant langą užkrauname paskutinį išsaugotą generavimą.
+// Latest API saugo sprendimus, tačiau dar negrąžina papildo formos ir veikliosios medžiagos;
+// jų nerodome, kol šie laukai nebus pridėti prie išsaugotos informacijos API.
+function previewFromLatest(
+    latest: LatestRecommendationsResponse,
+    indicators: BloodIndicator[],
+    current?: RecommendationPreviewResponse | null
+): RecommendationPreviewResponse {
+    const nameByIndicator = new Map(indicators.map(indicator => [indicator.id, indicator.name]))
+
+    return {
+        bloodTestId: latest.bloodTestId,
+        criticalDetected: false,
+        criticalityNotAssessed: latest.criticalityNotAssessed,
+        normalCount: indicators.filter(indicator => indicator.indicatorStatus === 'WITHIN_RANGE').length,
+        undeterminedCount: indicators.filter(indicator => indicator.indicatorStatus === 'UNDETERMINED').length,
+        canAccept: false, // Ne medicininis patvirtinimas; vartotojo pasirinkimą leidžia decision API.
+        recommendations: latest.items
+            .filter(item => item.recommendationStatus === 'SUGGESTED')
+            .map(item => {
+                const matching = current?.recommendations.find(previous =>
+                    previous.indicatorId === item.indicatorId
+                    && previous.supplementId === item.supplementId
+                    && previous.reason === item.reason
+                )
+                return {
+                    indicatorId: item.indicatorId,
+                    indicatorName: nameByIndicator.get(item.indicatorId) ?? `Rodiklis #${item.indicatorId}`,
+                    supplementId: item.supplementId ?? 0,
+                    supplementName: item.supplementName ?? 'Papildas nenurodytas',
+                    activeSubstance: matching?.activeSubstance ?? '',
+                    form: matching?.form ?? '',
+                    proposedDailyDose: item.proposedDailyDose,
+                    doseUnit: item.doseUnit,
+                    durationDays: item.durationDays,
+                    reason: item.reason,
+                    warnings: item.warnings,
+                }
+            }),
+        notRecommended: latest.items
+            .filter(item => item.recommendationStatus !== 'SUGGESTED')
+            .map(item => ({
+                indicatorId: item.indicatorId,
+                indicatorName: nameByIndicator.get(item.indicatorId) ?? `Rodiklis #${item.indicatorId}`,
+                status: item.recommendationStatus as 'NOT_RECOMMENDED' | 'NEEDS_REVIEW',
+                reason: item.reason,
+                warnings: item.warnings,
+            })),
+        notices: [
+            ...(latest.criticalityNotAssessed
+                ? ['Kritinių ribų taisyklės neapibrėžtos. Rodiklių saugumas neįvertintas.']
+                : []),
+            'Tai nepatvirtinti DI demonstraciniai pasiūlymai. Dozės, alergijos ir sąveikos turi būti patikrintos. Tai nėra gydymo paskyrimas.',
+        ],
+    }
+}
+
 export default function BloodTestReview({ testId }: { testId: number }) {
     const [test, setTest] = useState<BloodTestDetail | null>(null)
     const [loading, setLoading] = useState(true)
@@ -67,6 +129,10 @@ export default function BloodTestReview({ testId }: { testId: number }) {
 
     const showAnalysis = analysisTestId === testId
     const [startingAnalysis, setStartingAnalysis] = useState(false)
+    const [recommendations, setRecommendations] = useState<RecommendationPreviewResponse | null>(null)
+    const [generatingRecommendations, setGeneratingRecommendations] = useState(false)
+    const [savedRecommendations, setSavedRecommendations] = useState<LatestRecommendationsResponse | null>(null)
+    const [savingRecommendationId, setSavingRecommendationId] = useState<number | null>(null)
 
     const loadTest = useCallback(async () => {
         try {
@@ -333,6 +399,103 @@ export default function BloodTestReview({ testId }: { testId: number }) {
     }
 
 
+    async function getLatestRecommendations(): Promise<LatestRecommendationsResponse | null> {
+        try {
+            const response = await api.get<LatestRecommendationsResponse>(
+                `/api/tyrimai/${testId}/recommendations/latest`
+            )
+            return response.data
+        } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 404) {
+                return null // Dar nieko negeneruota.
+            }
+            throw err
+        }
+    }
+
+    // Pirmiausia rodome jau išsaugotas rekomendacijas, kad nesukurtume naujo
+    // generavimo kas kartą naudotojui grįžus į šį langą.
+    async function openRecommendations() {
+        if (generatingRecommendations) return
+        setGeneratingRecommendations(true)
+        setError('')
+        try {
+            const latest = await getLatestRecommendations()
+            if (latest) {
+                setSavedRecommendations(latest)
+                setRecommendations(previewFromLatest(latest, test?.indicators ?? [], recommendations))
+                setAnalysisTestId(null)
+            } else {
+                await generateRecommendationsRequest()
+            }
+        } catch (err) {
+            setError(getErrorMessage(err, 'Nepavyko atidaryti papildų rekomendacijų.'))
+        } finally {
+            setGeneratingRecommendations(false)
+        }
+    }
+
+    async function generateRecommendationsRequest() {
+        const response = await api.post<RecommendationPreviewResponse>(
+            `/api/tyrimai/${testId}/recommendations/preview`
+        )
+        setRecommendations(response.data)
+        setSavedRecommendations(null)
+        setAnalysisTestId(null)
+        // Naujas generavimas sukuria naujus įrašų ID; jų nebandome spėti iš indicatorId.
+        const latest = await getLatestRecommendations()
+        setSavedRecommendations(latest)
+    }
+
+    async function regenerateRecommendations() {
+        if (generatingRecommendations || savingRecommendationId !== null) return
+        if (savedRecommendations?.items.some(item => item.decision !== 'PENDING')
+            && !window.confirm('Naujas generavimas taps aktyviu. Ankstesni pasirinkimai liks istorijoje, bet nebus naujausio generavimo dalis. Generuoti iš naujo?')) {
+            return
+        }
+
+        setGeneratingRecommendations(true)
+        setError('')
+        try {
+            await generateRecommendationsRequest()
+        } catch (err) {
+            setError(getErrorMessage(err, 'Nepavyko sugeneruoti papildų rekomendacijų.'))
+        } finally {
+            setGeneratingRecommendations(false)
+        }
+    }
+
+    async function decideRecommendation(id: number, decision: 'ACCEPTED' | 'REJECTED') {
+        if (savingRecommendationId !== null || generatingRecommendations) return
+        setSavingRecommendationId(id)
+        setError('')
+        try {
+            const response = await api.patch<SavedRecommendationItem>(
+                `/api/tyrimai/${testId}/recommendations/${id}/decision`,
+                { decision }
+            )
+            setSavedRecommendations(previous => previous ? {
+                ...previous,
+                items: previous.items.map(item => item.id === id ? response.data : item),
+            } : previous)
+        } catch (err) {
+            if (axios.isAxiosError(err) && [404, 409].includes(err.response?.status ?? 0)) {
+                try {
+                    const latest = await getLatestRecommendations()
+                    setSavedRecommendations(latest)
+                    if (latest) {
+                        setRecommendations(previewFromLatest(latest, test?.indicators ?? []))
+                    }
+                } catch {
+                    // Paliekame originalią klaidą naudotojui.
+                }
+            }
+            setError(getErrorMessage(err, 'Nepavyko išsaugoti rekomendacijos pasirinkimo.'))
+        } finally {
+            setSavingRecommendationId(null)
+        }
+    }
+
     if (loading) return <p>Įkeliami tyrimo duomenys...</p>
 
 
@@ -340,7 +503,17 @@ export default function BloodTestReview({ testId }: { testId: number }) {
     if (test?.status === 'CONFIRMED') {
         return (
             <>
-                {showAnalysis ? (
+                {recommendations ? (
+                    <RecommendationPreview
+                        data={recommendations}
+                        onBack={() => setRecommendations(null)}
+                        onRegenerate={() => void regenerateRecommendations()}
+                        regenerating={generatingRecommendations}
+                        saved={savedRecommendations}
+                        onDecision={(id, decision) => void decideRecommendation(id, decision)}
+                        savingRecommendationId={savingRecommendationId}
+                    />
+                ) : showAnalysis ? (
                     <>
                         <button
                             type="button"
@@ -358,6 +531,8 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                         onOpenPdf={() => void openOriginalPdf()}
                         onExplain={() => void requestExplanation()}
                         explanationLoading={startingAnalysis}
+                        onRecommendations={() => void openRecommendations()}
+                        recommendationsLoading={generatingRecommendations}
                     />
                 )}
 

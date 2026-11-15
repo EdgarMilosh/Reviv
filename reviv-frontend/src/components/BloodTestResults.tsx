@@ -25,6 +25,8 @@ type Props = {
     onOpenPdf: () => void
     onExplain: () => void
     explanationLoading: boolean
+    onRecommendations: () => void
+    recommendationsLoading: boolean
 }
 
 const statusLabels: Record<IndicatorStatus, string> = {
@@ -38,7 +40,9 @@ export default function BloodTestResults({
                                              test,
                                              onOpenPdf,
                                              onExplain,
-                                             explanationLoading
+                                             explanationLoading,
+                                             onRecommendations,
+                                             recommendationsLoading
                                          }: Props) {
     const [showAll, setShowAll] = useState(false)
 
@@ -113,6 +117,16 @@ export default function BloodTestResults({
                     {explanationLoading
                         ? 'Atidaroma analizė...'
                         : 'Gauti paaiškinimą'}
+                </button>
+
+                <button
+                    type="button"
+                    disabled={recommendationsLoading}
+                    onClick={onRecommendations}
+                >
+                    {recommendationsLoading
+                        ? 'Ollama generuoja...'
+                        : 'Gauti papildų rekomendacijas'}
                 </button>
 
                 <button type="button" disabled>
