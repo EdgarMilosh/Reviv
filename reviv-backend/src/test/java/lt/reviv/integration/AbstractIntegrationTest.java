@@ -11,7 +11,8 @@ import org.springframework.context.annotation.Import;
 @SpringBootTest(properties = {
         "DB_USER=test",
         "DB_PASSWORD=test",
-        "reviv.admin-emails=admin@gmail.com"
+        "reviv.admin-emails=admin@gmail.com",
+        "reviv.reminders.enabled=false"
 })
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
