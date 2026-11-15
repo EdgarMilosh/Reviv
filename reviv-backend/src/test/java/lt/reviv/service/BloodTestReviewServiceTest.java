@@ -207,4 +207,61 @@ class BloodTestReviewServiceTest {
         ReflectionTestUtils.setField(user, "id", 999L);
         assertStatus(HttpStatus.NOT_FOUND, () -> service.getOriginalPdf(6L, jwt));
     }
+    @Test
+    void listTestsReturnsEmptyListWhenUserHasNoTests() {
+        when(tests.findAllByUserIdOrderByUploadedAtDesc(7L)).thenReturn(List.of());
+
+        var result = service.listTests(jwt, null);
+
+        assertTrue(result.isEmpty());
+        verify(tests).findAllByUserIdOrderByUploadedAtDesc(7L);
+    }
+
+    @Test
+    void listTestsRejectsMissingUser() {
+        when(users.findByGoogleId("g-1")).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class,
+            () -> service.listTests(jwt, null));
+
+        verifyNoInteractions(tests);
+    }
+
+    @Test
+    void listTestsPassesFilterWithoutErrors() {
+        when(tests.findAllByUserIdOrderByUploadedAtDesc(7L)).thenReturn(List.of());
+
+        var result = service.listTests(jwt, "TEST LAB");
+
+        assertTrue(result.isEmpty());
+        verify(tests).findAllByUserIdOrderByUploadedAtDesc(7L);
+    }
+
+    @Test
+    void deleteTestRejectsMissingUser() {
+        when(users.findByGoogleId("g-1")).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class,
+            () -> service.deleteTest(6L, jwt));
+
+        verify(tests, never()).findById(anyLong());
+    }
+
+    @Test
+    void deleteTestRejectsMissingTest() {
+        when(tests.findById(999L)).thenReturn(Optional.empty());
+
+        assertStatus(HttpStatus.NOT_FOUND,
+            () -> service.deleteTest(999L, jwt));
+    }
+
+    @Test
+    void deleteTestRejectsAnotherUsersTest() {
+        ReflectionTestUtils.setField(test, "userId", 999L);
+
+        assertStatus(HttpStatus.NOT_FOUND,
+            () -> service.deleteTest(6L, jwt));
+
+        verify(tests, never()).delete(any(BloodTest.class));
+    }
 }

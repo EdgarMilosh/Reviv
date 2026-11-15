@@ -2,6 +2,7 @@ package lt.reviv.controller;
 
 import lt.reviv.bloodtests.controller.review.BloodTestReviewController;
 import lt.reviv.bloodtests.dto.review.BloodTestDetailResponse;
+import lt.reviv.bloodtests.dto.review.BloodTestListResponse;
 import lt.reviv.bloodtests.dto.review.MarkExtractionIssueRequest;
 import lt.reviv.bloodtests.service.review.BloodTestReviewService;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,5 +89,36 @@ class BloodTestReviewControllerTest {
         assertEquals("no-store", response.getHeaders().getFirst(HttpHeaders.CACHE_CONTROL));
         assertArrayEquals(pdf, response.getBody());
         verify(service).getOriginalPdf(6L, jwt);
+    }
+
+    @Test
+    void listTests_shouldReturnTests() {
+        List<BloodTestListResponse> responses = List.of();
+
+        when(service.listTests(jwt, "MedLab")).thenReturn(responses);
+
+        List<BloodTestListResponse> result = controller.listTests(jwt, "MedLab");
+
+        assertSame(responses, result);
+        verify(service).listTests(jwt, "MedLab");
+    }
+
+    @Test
+    void listTests_shouldAllowMissingFilter() {
+        List<BloodTestListResponse> responses = List.of();
+
+        when(service.listTests(jwt, null)).thenReturn(responses);
+
+        List<BloodTestListResponse> result = controller.listTests(jwt, null);
+
+        assertSame(responses, result);
+        verify(service).listTests(jwt, null);
+    }
+
+    @Test
+    void deleteBloodTest_shouldCallService() {
+        controller.deleteBloodTest(6L, jwt);
+
+        verify(service).deleteTest(6L, jwt);
     }
 }
