@@ -10,10 +10,11 @@ interface MenuItem {
 
 const ALL: Role[] = ['USER', 'ADMIN']
 
-// Čia valdoma, kas ką mato. Pridėti naują punktą = pridėti eilutę.
+
 const MENU: MenuItem[] = [
     { to: '/', label: 'Pradžia', roles: ALL },
     { to: '/upload', label: 'Įkelti tyrimą', roles: ALL },
+    { to: '/plans', label: 'Mano planai', roles: ALL },
     { to: '/catalog', label: 'Papildų katalogas', roles: ['ADMIN'] },
     { to: '/reports', label: 'Ataskaitos', roles: ['ADMIN'] },
     { to: '/users', label: 'Naudotojai', roles: ['ADMIN'] },

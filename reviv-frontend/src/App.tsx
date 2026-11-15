@@ -8,6 +8,8 @@ import Placeholder from './pages/Placeholder'
 import UploadPage from './pages/UploadPage'
 import ProfilePage from './pages/ProfilePage'
 import CatalogPage from './pages/CatalogPage'
+import PlansPage from './pages/PlansPage'
+import PlanDetailPage from './pages/PlanDetailPage'
 
 
 
@@ -36,6 +38,8 @@ export default function App() {
                 <Route index element={<HomePage />} />
                 <Route path="upload" element={<UploadPage />} />
                 <Route path="profile" element={<ProfilePage />} />
+                <Route path="plans" element={<PlansPage />} />
+                <Route path="plans/:planId" element={<PlanDetailPage />} />
                 <Route
                     path="catalog"
                     element={

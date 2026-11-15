@@ -9,6 +9,7 @@ import RecommendationPreview, {
     type LatestRecommendationsResponse,
     type SavedRecommendationItem,
 } from './RecommendationPreview'
+import ConsumptionPlan, { type ConsumptionPlanData } from './ConsumptionPlan'
 
 type Issue = {
     id: number
@@ -133,6 +134,8 @@ export default function BloodTestReview({ testId }: { testId: number }) {
     const [generatingRecommendations, setGeneratingRecommendations] = useState(false)
     const [savedRecommendations, setSavedRecommendations] = useState<LatestRecommendationsResponse | null>(null)
     const [savingRecommendationId, setSavingRecommendationId] = useState<number | null>(null)
+    const [consumptionPlan, setConsumptionPlan] = useState<ConsumptionPlanData | null>(null)
+    const [openingPlan, setOpeningPlan] = useState(false)
 
     const loadTest = useCallback(async () => {
         try {
@@ -496,6 +499,22 @@ export default function BloodTestReview({ testId }: { testId: number }) {
         }
     }
 
+    async function openConsumptionPlan() {
+        if (openingPlan || generatingRecommendations || savingRecommendationId !== null) return
+        setOpeningPlan(true)
+        setError('')
+        try {
+            // POST is idempotent: returns an existing plan or creates a new draft.
+            // Avoid an expected GET 404 for a first-time plan.
+            const response = await api.post<ConsumptionPlanData>(`/api/tyrimai/${testId}/plan/generate`)
+            setConsumptionPlan(response.data)
+        } catch (err) {
+            setError(getErrorMessage(err, 'Nepavyko sudaryti vartojimo plano.'))
+        } finally {
+            setOpeningPlan(false)
+        }
+    }
+
     if (loading) return <p>Įkeliami tyrimo duomenys...</p>
 
 
@@ -503,7 +522,13 @@ export default function BloodTestReview({ testId }: { testId: number }) {
     if (test?.status === 'CONFIRMED') {
         return (
             <>
-                {recommendations ? (
+                {consumptionPlan ? (
+                    <ConsumptionPlan
+                        data={consumptionPlan}
+                        onChange={setConsumptionPlan}
+                        onBack={() => setConsumptionPlan(null)}
+                    />
+                ) : recommendations ? (
                     <RecommendationPreview
                         data={recommendations}
                         onBack={() => setRecommendations(null)}
@@ -512,6 +537,8 @@ export default function BloodTestReview({ testId }: { testId: number }) {
                         saved={savedRecommendations}
                         onDecision={(id, decision) => void decideRecommendation(id, decision)}
                         savingRecommendationId={savingRecommendationId}
+                        onOpenPlan={() => void openConsumptionPlan()}
+                        openingPlan={openingPlan}
                     />
                 ) : showAnalysis ? (
                     <>

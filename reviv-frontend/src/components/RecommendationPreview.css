@@ -33,3 +33,8 @@
 .rec-choice-accepted { color: #0f766e; }
 .rec-choice-rejected { color: #64748b; }
 .rec-actions button:not(:disabled) { cursor: pointer; }
+
+.rec-to-plan { margin-top: 24px; padding: 18px; border: 1px solid #0f766e; border-radius: 8px; display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; }
+.rec-to-plan p { font-size: 13px; color: #64748b; margin: 6px 0 0; }
+.rec-to-plan button { padding: 12px 18px; background: #0f766e; color: white; border: 0; border-radius: 6px; font-weight: 600; cursor: pointer; }
+.rec-to-plan button:disabled { opacity: .5; cursor: not-allowed; }
