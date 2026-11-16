@@ -11,8 +11,7 @@ import CatalogPage from './pages/CatalogPage'
 import PlansPage from './pages/PlansPage'
 import PlanDetailPage from './pages/PlanDetailPage'
 import TyrimaiPage from './pages/TyrimaiPage'
-
-
+import IndicatorTrendPage from './pages/IndicatorTrendPage'
 
 export default function App() {
     return (
@@ -39,6 +38,7 @@ export default function App() {
                 <Route index element={<HomePage />} />
                 <Route path="upload" element={<UploadPage />} />
                 <Route path="tyrimai" element={<TyrimaiPage />} />
+                <Route path="rodikliai" element={<IndicatorTrendPage />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="plans" element={<PlansPage />} />
                 <Route path="plans/:planId" element={<PlanDetailPage />} />
