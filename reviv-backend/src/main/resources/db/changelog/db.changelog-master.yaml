@@ -24,4 +24,7 @@ databaseChangeLog:
   - include:
       file: db/changelog/011-fix-plan-entry-unique-key.yaml
   - include:
+      file: db/changelog/012-plan-scheduled-time.yaml
+  - include:    
       file: db/changelog/013-dose-log.yaml
+

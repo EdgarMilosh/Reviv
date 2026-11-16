@@ -91,8 +91,8 @@ public class RecommendationPreviewService {
 
         if (context.criticalityNotAssessed()) {
             notices.add(
-                    "Kritinių ribų taisyklės neapibrėžtos. "
-                            + "Rodiklių saugumas neįvertintas."
+                    "Ne visų rodiklių kritinius nukrypimus sistema gali "
+                            + "automatiškai įvertinti. Rekomendacijos yra informacinės."
             );
         }
 

@@ -3,6 +3,7 @@ package lt.reviv.bloodtests.domain.plan;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "consumption_plan_entry")
@@ -30,6 +31,8 @@ public class PlanEntry {
     @Enumerated(EnumType.STRING)
     @Column(name = "meal_relation", nullable = false, length = 20)
     private MealRelation mealRelation;
+    @Column(name = "scheduled_time", nullable = false)
+    private LocalTime scheduledTime;
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
     @Column(name = "end_date", nullable = false)
@@ -48,14 +51,18 @@ public class PlanEntry {
         this.recommendationId = recommendationId;
         this.supplementId = supplementId;
         this.supplementNameSnapshot = name;
-        update(dailyDose, dayPart, mealRelation, startDate, endDate, breakDays, notes);
+        this.dailyDose = dailyDose;
         this.doseUnit = doseUnit;
+        update(dayPart, PlanScheduleTimes.defaultFor(dayPart), mealRelation, startDate, endDate, breakDays, notes);
     }
 
-    public void update(BigDecimal dailyDose, DayPart dayPart, MealRelation mealRelation,
+    public void update(DayPart dayPart, LocalTime scheduledTime, MealRelation mealRelation,
                        LocalDate startDate, LocalDate endDate, Integer breakDays, String notes) {
-        this.dailyDose = dailyDose;
+        if (!PlanScheduleTimes.isAllowed(dayPart, scheduledTime)) {
+            throw new IllegalArgumentException("Netinkamas vartojimo laikas pasirinktai paros daliai.");
+        }
         this.dayPart = dayPart;
+        this.scheduledTime = scheduledTime;
         this.mealRelation = mealRelation;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -71,6 +78,7 @@ public class PlanEntry {
     public BigDecimal getDailyDose() { return dailyDose; }
     public String getDoseUnit() { return doseUnit; }
     public DayPart getDayPart() { return dayPart; }
+    public LocalTime getScheduledTime() { return scheduledTime; }
     public MealRelation getMealRelation() { return mealRelation; }
     public LocalDate getStartDate() { return startDate; }
     public LocalDate getEndDate() { return endDate; }

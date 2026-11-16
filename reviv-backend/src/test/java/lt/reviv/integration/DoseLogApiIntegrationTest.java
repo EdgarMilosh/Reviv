@@ -74,12 +74,31 @@ class DoseLogApiIntegrationTest extends AbstractIntegrationTest {
         });
     }
 
+    private boolean hasScheduledTime() {
+        Integer count = jdbc.queryForObject(
+                "select count(*) from information_schema.columns where table_schema = current_schema() "
+                        + "and table_name = 'consumption_plan_entry' and column_name = 'scheduled_time'",
+                Integer.class);
+        return count != null && count > 0;
+    }
+
+    private static String standardTime(String dayPart) {
+        return switch (dayPart) {
+            case "MORNING" -> "08:00";
+            case "NOON" -> "13:00";
+            default -> "19:00";
+        };
+    }
+
     private Long insertEntry(Long planId, String name, String dayPart, LocalDate start, LocalDate end) {
+        boolean withTime = hasScheduledTime();
         return relaxed(() -> jdbc.queryForObject(
                 "insert into consumption_plan_entry (plan_id, recommendation_id, supplement_id, "
-                        + "supplement_name_snapshot, daily_dose, dose_unit, day_part, meal_relation, start_date, end_date) "
+                        + "supplement_name_snapshot, daily_dose, dose_unit, day_part, meal_relation, start_date, end_date"
+                        + (withTime ? ", scheduled_time" : "") + ") "
                         + "values (?, ?, (select id from supplement where name = 'Kalcis'), ?, 500.0, 'mg', ?, "
-                        + "'AFTER_MEAL', ?, ?) returning id",
+                        + "'AFTER_MEAL', ?, ?" + (withTime ? ", TIME '" + standardTime(dayPart) + "'" : "") + ") "
+                        + "returning id",
                 Long.class, planId, RECOMMENDATION.incrementAndGet(), name, dayPart, start, end));
     }
 
