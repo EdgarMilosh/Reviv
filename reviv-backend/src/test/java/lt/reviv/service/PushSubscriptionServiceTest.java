@@ -2,6 +2,7 @@ package lt.reviv.service;
 
 import lt.reviv.common.error.UserNotFoundException;
 import lt.reviv.push.config.PushProperties;
+import lt.reviv.push.config.VapidKeys;
 import lt.reviv.push.domain.PushSubscription;
 import lt.reviv.push.dto.PushSubscriptionRequest;
 import lt.reviv.push.repository.PushSubscriptionRepository;
@@ -45,7 +46,7 @@ class PushSubscriptionServiceTest {
     @BeforeEach
     void setUp() {
         service = new PushSubscriptionService(subscriptions, users,
-                new PushProperties("public-key", "private-key", "mailto:t@test.lt"));
+                new VapidKeys("public-key", "private-key", "mailto:t@test.lt"));
     }
 
     private static Jwt jwt() {

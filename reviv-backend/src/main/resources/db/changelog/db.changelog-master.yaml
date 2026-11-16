@@ -27,4 +27,6 @@ databaseChangeLog:
       file: db/changelog/012-plan-scheduled-time.yaml
   - include:    
       file: db/changelog/013-dose-log.yaml
+  - include:
+      file: db/changelog/014-app-setting.yaml
 

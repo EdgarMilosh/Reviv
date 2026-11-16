@@ -1,7 +1,7 @@
 package lt.reviv.push.service;
 
 import lt.reviv.common.error.UserNotFoundException;
-import lt.reviv.push.config.PushProperties;
+import lt.reviv.push.config.VapidKeys;
 import lt.reviv.push.domain.PushSubscription;
 import lt.reviv.push.dto.PushSubscriptionRequest;
 import lt.reviv.push.repository.PushSubscriptionRepository;
@@ -16,18 +16,18 @@ public class PushSubscriptionService {
 
     private final PushSubscriptionRepository subscriptionRepository;
     private final AppUserRepository userRepository;
-    private final PushProperties properties;
+    private final VapidKeys keys;
 
     public PushSubscriptionService(PushSubscriptionRepository subscriptionRepository,
                                    AppUserRepository userRepository,
-                                   PushProperties properties) {
+                                   VapidKeys keys) {
         this.subscriptionRepository = subscriptionRepository;
         this.userRepository = userRepository;
-        this.properties = properties;
+        this.keys = keys;
     }
 
     public String publicKey() {
-        return properties.publicKey();
+        return keys.publicKey();
     }
 
     /** Saves the subscription; if the same browser endpoint already exists, updates owner and keys. */

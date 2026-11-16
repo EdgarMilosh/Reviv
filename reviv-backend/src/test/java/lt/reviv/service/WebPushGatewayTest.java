@@ -1,6 +1,7 @@
 package lt.reviv.service;
 
 import lt.reviv.push.config.PushProperties;
+import lt.reviv.push.config.VapidKeys;
 import lt.reviv.push.domain.PushSubscription;
 import lt.reviv.push.service.PushGateway;
 import lt.reviv.push.service.PushMessage;
@@ -17,7 +18,7 @@ class WebPushGatewayTest {
 
     @Test
     void TA59_gatewayDoesNotSendWithoutVapidKeys() {
-        WebPushGateway gateway = new WebPushGateway(new PushProperties("", "", ""));
+        WebPushGateway gateway = new WebPushGateway(new VapidKeys("", "", ""));
 
         PushGateway.Result result = gateway.send(
                 new PushSubscription(1L, "https://push.example.com/abc", "p256dh", "auth"),
@@ -28,7 +29,7 @@ class WebPushGatewayTest {
 
     @Test
     void TA59_bouncyCastleProviderIsRegisteredBeforeTheFirstSend() {
-        new WebPushGateway(new PushProperties("", "", ""));
+        new WebPushGateway(new VapidKeys("", "", ""));
 
         assertNotNull(Security.getProvider("BC"),
                 "The web-push library looks the provider up by the name BC when it parses subscription keys");

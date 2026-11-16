@@ -1,7 +1,7 @@
 package lt.reviv.push.service;
 
 import lt.reviv.bloodtests.domain.plan.ConsumptionPlan;
-import lt.reviv.push.config.PushProperties;
+import lt.reviv.push.config.VapidKeys;
 import lt.reviv.push.config.ReminderProperties;
 import lt.reviv.push.domain.PushDelivery;
 import lt.reviv.push.repository.PushDeliveryRepository;
@@ -35,25 +35,25 @@ public class ReminderDispatchService {
 
     private final PushDeliveryRepository deliveries;
     private final PushNotificationService notifications;
-    private final PushProperties pushProperties;
+    private final VapidKeys vapidKeys;
     private final ReminderProperties properties;
     private final Clock clock;
 
     public ReminderDispatchService(PushDeliveryRepository deliveries,
                                    PushNotificationService notifications,
-                                   PushProperties pushProperties,
+                                   VapidKeys vapidKeys,
                                    ReminderProperties properties,
                                    Clock clock) {
         this.deliveries = deliveries;
         this.notifications = notifications;
-        this.pushProperties = pushProperties;
+        this.vapidKeys = vapidKeys;
         this.properties = properties;
         this.clock = clock;
     }
 
     /** Sends all reminders that are due now; returns how many notifications were sent. */
     public int dispatchDue() {
-        if (!pushProperties.configured()) {
+        if (!vapidKeys.configured()) {
             log.debug("Reminders skipped: VAPID keys are not configured");
             return 0;
         }
