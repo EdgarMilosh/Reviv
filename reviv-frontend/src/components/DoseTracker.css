@@ -1,0 +1,259 @@
+.dose-tracker {
+    margin-top: 28px;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    color: #1f2937;
+}
+
+.dose-tracker h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #111827;
+}
+
+.dose-date {
+    margin: 6px 0 18px;
+    color: #64748b;
+    font-size: 14px;
+    text-transform: capitalize;
+}
+
+.dose-muted {
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.dose-error {
+    color: #9f1239;
+    font-size: 14px;
+}
+
+.dose-all-done {
+    color: #0f766e;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.dose-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    overflow: hidden;
+}
+
+.dose-row {
+    display: grid;
+    grid-template-columns: 64px 1fr auto auto;
+    align-items: center;
+    gap: 6px 16px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dose-row:last-child {
+    border-bottom: 0;
+}
+
+.dose-row.is-taken {
+    background: #f0fdf9;
+}
+
+.dose-row.is-skipped {
+    background: #fef7f7;
+}
+
+.dose-time {
+    font-weight: 700;
+    color: #0f766e;
+}
+
+.dose-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.dose-info small {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.dose-badge {
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 5px 10px;
+    white-space: nowrap;
+}
+
+.dose-badge.is-pending {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.dose-badge.is-taken {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.dose-badge.is-skipped {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.dose-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.dose-guidance {
+    grid-column: 1 / -1;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.dose-guidance p {
+    margin: 4px 0 0;
+}
+
+.dose-guidance.is-drink_now {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e3a8a;
+}
+
+.dose-guidance.is-skip {
+    background: #fff8e1;
+    border: 1px solid #e8c75b;
+    color: #7c5a00;
+}
+
+.dose-guidance .dose-rule {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.dose-history-title {
+    margin-top: 32px !important;
+}
+
+.dose-period {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0 18px;
+}
+
+.dose-period button {
+    cursor: pointer;
+    background: #fff;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-weight: 600;
+}
+
+.dose-period button.selected {
+    background: #0f766e;
+    border-color: #0f766e;
+    color: #fff;
+}
+
+.dose-notice {
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.dose-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.dose-stats > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.dose-stats strong {
+    font-size: 24px;
+    color: #0f766e;
+}
+
+.dose-stats span {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.dose-bar {
+    height: 10px;
+    border-radius: 6px;
+    background: #e5e7eb;
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+
+.dose-bar > div {
+    height: 100%;
+    background: #0f766e;
+}
+
+.dose-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.dose-table th,
+.dose-table td {
+    text-align: left;
+    padding: 9px 10px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dose-table th {
+    color: #64748b;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+@media (max-width: 850px) {
+    .dose-tracker {
+        padding: 14px;
+    }
+
+    .dose-row {
+        grid-template-columns: 56px 1fr;
+    }
+
+    .dose-badge,
+    .dose-actions {
+        grid-column: 2;
+        justify-content: flex-start;
+    }
+
+    .dose-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
