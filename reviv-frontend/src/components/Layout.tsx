@@ -17,6 +17,7 @@ const MENU: MenuItem[] = [
     { to: '/tyrimai', label: 'Tyrimai', roles: ALL },
     { to: '/rodikliai', label: 'Rodiklių kitimas', roles: ALL },
     { to: '/plans', label: 'Mano planai', roles: ALL },
+    { to: '/suvestine', label: 'Suvestinė', roles: ALL },
     { to: '/catalog', label: 'Papildų katalogas', roles: ['ADMIN'] },
     { to: '/reports', label: 'Ataskaitos', roles: ['ADMIN'] },
     { to: '/users', label: 'Naudotojai', roles: ['ADMIN'] },
