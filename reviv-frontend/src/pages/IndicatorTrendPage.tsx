@@ -109,33 +109,44 @@ export default function IndicatorTrendPage() {
     }, [])
 
 
+
     useEffect(() => {
         if (!selectedIndicatorId) {
             return
         }
 
         let cancelled = false
-        setLoadingHistory(true)
 
-        const params = period ? { period } : undefined
+        const fetchHistory = async () => {
+            setLoadingHistory(true)
 
-        api.get<HistoryResponse>(`/api/rodikliai/${selectedIndicatorId}/istorija`, { params })
-        .then((response) => {
-            if (cancelled) return
-            setHistory(response.data)
-            setSelectedPoint(response.data.points.at(-1) ?? null)
-            setError('')
-        })
-        .catch(() => {
-            if (!cancelled) {
+            const params = period ? { period } : undefined
+
+            try {
+                const response = await api.get<HistoryResponse>(
+                    `/api/rodikliai/${selectedIndicatorId}/istorija`,
+                    { params }
+                )
+
+                if (cancelled) return
+
+                setHistory(response.data)
+                setSelectedPoint(response.data.points.at(-1) ?? null)
+                setError('')
+            } catch {
+                if (cancelled) return
+
                 setError('Nepavyko gauti rodiklio istorijos.')
                 setHistory(null)
                 setSelectedPoint(null)
+            } finally {
+                if (!cancelled) {
+                    setLoadingHistory(false)
+                }
             }
-        })
-        .finally(() => {
-            if (!cancelled) setLoadingHistory(false)
-        })
+        }
+
+        fetchHistory()
 
         return () => {
             cancelled = true
