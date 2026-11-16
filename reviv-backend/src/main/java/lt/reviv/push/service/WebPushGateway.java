@@ -1,6 +1,6 @@
 package lt.reviv.push.service;
 
-import lt.reviv.push.config.PushProperties;
+import lt.reviv.push.config.VapidKeys;
 import lt.reviv.push.domain.PushSubscription;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
@@ -27,17 +27,17 @@ public class WebPushGateway implements PushGateway {
         }
     }
 
-    private final PushProperties properties;
+    private final VapidKeys keys;
     private volatile PushService pushService;
 
-    public WebPushGateway(PushProperties properties) {
-        this.properties = properties;
+    public WebPushGateway(VapidKeys keys) {
+        this.keys = keys;
     }
 
     @Override
     public Result send(PushSubscription subscription, PushMessage message) {
-        if (!properties.configured()) {
-            log.warn("Web Push not sent: VAPID keys are not configured (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)");
+        if (!keys.configured()) {
+            log.warn("Web Push not sent: VAPID keys are not available");
             return Result.FAILED;
         }
         try {
@@ -66,7 +66,7 @@ public class WebPushGateway implements PushGateway {
         if (current == null) {
             synchronized (this) {
                 if (pushService == null) {
-                    pushService = new PushService(properties.publicKey(), properties.privateKey(), properties.subject());
+                    pushService = new PushService(keys.publicKey(), keys.privateKey(), keys.subject());
                 }
                 current = pushService;
             }

@@ -2,7 +2,7 @@ package lt.reviv.service;
 
 import lt.reviv.bloodtests.domain.plan.ConsumptionPlan;
 import lt.reviv.bloodtests.domain.plan.PlanEntry;
-import lt.reviv.push.config.PushProperties;
+import lt.reviv.push.config.VapidKeys;
 import lt.reviv.push.config.ReminderProperties;
 import lt.reviv.push.domain.PushDelivery;
 import lt.reviv.push.repository.PushDeliveryRepository;
@@ -49,7 +49,7 @@ class ReminderDispatchServiceTest {
 
     private static final ZoneId ZONE = ZoneId.of("Europe/Vilnius");
     private static final LocalDate TODAY = LocalDate.of(2026, 11, 16);
-    private static final PushProperties CONFIGURED = new PushProperties("public", "private", "mailto:t@test.lt");
+    private static final VapidKeys CONFIGURED = new VapidKeys("public", "private", "mailto:t@test.lt");
     private static final ReminderProperties SETTINGS = new ReminderProperties(true, "Europe/Vilnius", 10, 9);
 
     @Mock
@@ -58,7 +58,7 @@ class ReminderDispatchServiceTest {
     @Mock
     private PushNotificationService notifications;
 
-    private ReminderDispatchService service(PushProperties push, LocalDateTime now) {
+    private ReminderDispatchService service(VapidKeys push, LocalDateTime now) {
         Clock clock = Clock.fixed(now.atZone(ZONE).toInstant(), ZONE);
         return new ReminderDispatchService(deliveries, notifications, push, SETTINGS, clock);
     }
@@ -181,7 +181,7 @@ class ReminderDispatchServiceTest {
 
     @Test
     void TA59_sendsNothingWithoutVapidKeys() {
-        int sent = service(new PushProperties("", "", ""), LocalDateTime.of(2026, 11, 16, 8, 0)).dispatchDue();
+        int sent = service(new VapidKeys("", "", ""), LocalDateTime.of(2026, 11, 16, 8, 0)).dispatchDue();
 
         assertEquals(0, sent);
         verifyNoInteractions(deliveries, notifications);
