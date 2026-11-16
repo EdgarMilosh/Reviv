@@ -1,13 +1,13 @@
 package lt.reviv.bloodtests.service.plan;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lt.reviv.bloodtests.ai.plan.OpenAiPlanClient;
 import lt.reviv.bloodtests.ai.plan.PlanProperties;
 import lt.reviv.bloodtests.domain.BloodTestIndicator;
 import lt.reviv.bloodtests.domain.plan.ConsumptionPlan;
 import lt.reviv.bloodtests.domain.plan.PlanEntry;
 import lt.reviv.bloodtests.domain.plan.PlanReminder;
+import lt.reviv.bloodtests.domain.plan.PlanScheduleTimes;
 import lt.reviv.bloodtests.domain.rec.RecommendationGeneration;
 import lt.reviv.bloodtests.domain.rec.SupplementRecommendation;
 import lt.reviv.bloodtests.repository.BloodTestIndicatorRepository;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 @Service
 public class ConsumptionPlanService {
     public record PlanEntryResult(Long id, Long recommendationId, Long supplementId, String supplementName,
-                                  BigDecimal dailyDose, String doseUnit, BigDecimal catalogMaxDailyDose, PlanEntry.DayPart dayPart,
+                                  BigDecimal dailyDose, String doseUnit, BigDecimal catalogMaxDailyDose, PlanEntry.DayPart dayPart, LocalTime scheduledTime,
                                   PlanEntry.MealRelation mealRelation, LocalDate startDate, LocalDate endDate,
                                   Integer breakDays, String notes, LocalTime reminderTime, List<String> warnings) {}
     public record PlanResponse(Long id, Long bloodTestId, Long generationId, String status,
@@ -52,8 +52,8 @@ public class ConsumptionPlanService {
                               String laboratory, LocalDate bloodTestDate, String status,
                               OffsetDateTime createdAt, OffsetDateTime updatedAt,
                               LocalDate startDate, LocalDate endDate, List<String> supplements) {}
-    public record EditRequest(@NotNull @Positive BigDecimal dailyDose,
-                              @NotNull PlanEntry.DayPart dayPart,
+    public record EditRequest(@NotNull PlanEntry.DayPart dayPart,
+                              @NotNull LocalTime scheduledTime,
                               @NotNull PlanEntry.MealRelation mealRelation,
                               @NotNull LocalDate startDate,
                               @NotNull LocalDate endDate,
@@ -240,9 +240,13 @@ public class ConsumptionPlanService {
                 notes = (notes.isBlank() ? context : notes + " " + context);
             }
             if (notes.length() > 800) notes = notes.substring(0, 800);
+            PlanEntry.MealRelation mealRelation =
+                    proposal.mealRelation() == PlanEntry.MealRelation.UNKNOWN
+                            ? PlanEntry.MealRelation.AFTER_MEAL
+                            : proposal.mealRelation();
             PlanEntry entry = new PlanEntry(plan.getId(), acceptedItem.getId(), grouped.getKey(),
                     supplementById.get(grouped.getKey()).getName(), acceptedItem.getProposedDailyDose(),
-                    acceptedItem.getDoseUnit(), times.get(grouped.getKey()), proposal.mealRelation(),
+                    acceptedItem.getDoseUnit(), times.get(grouped.getKey()), mealRelation,
                     start, start.plusDays(acceptedItem.getDurationDays() - 1L), proposal.breakDays(), notes);
             entries.save(entry);
         }
@@ -264,7 +268,12 @@ public class ConsumptionPlanService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Plano įrašas nerastas."));
         Supplement supplement = supplements.findById(entry.getSupplementId())
                 .orElseThrow(() -> conflict("Papildas nerastas kataloge."));
-        validateDose(request.dailyDose(), entry.getDoseUnit(), supplement);
+        // Dose is immutable after US-9 acceptance. It is not part of EditRequest.
+        validateDose(entry.getDailyDose(), entry.getDoseUnit(), supplement);
+        if (!PlanScheduleTimes.isAllowed(request.dayPart(), request.scheduledTime())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Laikas turi būti pasirinktas ±1 val. nuo paros dalies numatyto laiko (tik pilnos valandos).");
+        }
         if (request.startDate() == null || request.endDate() == null ||
                 request.endDate().isBefore(request.startDate()) ||
                 request.endDate().isAfter(request.startDate().plusDays(364)) ||
@@ -283,7 +292,7 @@ public class ConsumptionPlanService {
                 throw conflict("Sąveikaujančių papildų negalima planuoti tuo pačiu paros metu.");
             }
         }
-        entry.update(request.dailyDose(), request.dayPart(), request.mealRelation(),
+        entry.update(request.dayPart(), request.scheduledTime(), request.mealRelation(),
                 request.startDate(), request.endDate(), request.breakDays(), entry.getNotes());
         entries.save(entry);
         plan.touch();
@@ -359,7 +368,7 @@ public class ConsumptionPlanService {
                         entry.getSupplementId(), entry.getSupplementNameSnapshot(), entry.getDailyDose(),
                         entry.getDoseUnit(), supplements.findById(entry.getSupplementId())
                                 .map(Supplement::getMaxDailyDose).orElse(null),
-                        entry.getDayPart(), entry.getMealRelation(), entry.getStartDate(),
+                        entry.getDayPart(), entry.getScheduledTime(), entry.getMealRelation(), entry.getStartDate(),
                         entry.getEndDate(), entry.getBreakDays(), entry.getNotes(),
                         plan.getStatus() == ConsumptionPlan.Status.ACTIVE ?
                                 reminders.findByPlanEntryId(entry.getId())
@@ -432,11 +441,7 @@ public class ConsumptionPlanService {
     }
 
     private void syncReminder(PlanEntry entry) {
-        LocalTime time = switch (entry.getDayPart()) {
-            case MORNING -> LocalTime.of(8, 0);
-            case NOON -> LocalTime.of(13, 0);
-            case EVENING -> LocalTime.of(19, 0);
-        };
+        LocalTime time = entry.getScheduledTime();
         var existing = reminders.findByPlanEntryId(entry.getId());
         if (existing.isPresent()) {
             PlanReminder reminder = existing.get();

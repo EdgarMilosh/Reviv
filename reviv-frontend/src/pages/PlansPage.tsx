@@ -99,7 +99,11 @@ export default function PlansPage() {
             {!loading && !error && plans.length === 0 && (
                 <div className="plans-message plans-empty">
                     <h2>Vartojimo planų dar nėra</h2>
-                    <p>Patvirtinkite US-9 papildų rekomendacijas ir pasirinkite „Gauti vartojimo planą“. Tuomet jis atsiras šiame sąraše.</p>
+                    <p>
+                        Šiuo metu neturite sudarytų vartojimo planų.
+                        Įkelkite kraujo tyrimą, peržiūrėkite papildų rekomendacijas
+                        ir sudarykite savo vartojimo planą.
+                    </p>
                     <Link to="/upload">Atidaryti tyrimų įkėlimą</Link>
                 </div>
             )}

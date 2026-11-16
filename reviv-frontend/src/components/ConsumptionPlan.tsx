@@ -15,6 +15,7 @@ export type PlanEntry = {
     doseUnit: string
     catalogMaxDailyDose: number | null
     dayPart: DayPart
+    scheduledTime: string
     mealRelation: MealRelation
     startDate: string
     endDate: string
@@ -34,12 +35,12 @@ export type ConsumptionPlanData = {
     entries: PlanEntry[]
 }
 
-type Editable = Pick<PlanEntry, 'dailyDose' | 'dayPart' | 'mealRelation' | 'startDate' | 'endDate' | 'breakDays'>
+type Editable = Pick<PlanEntry, 'dayPart' | 'scheduledTime' | 'mealRelation' | 'startDate' | 'endDate' | 'breakDays'>
 
-const slots: { value: DayPart; label: string; time: string }[] = [
-    { value: 'MORNING', label: 'Rytas', time: '08:00' },
-    { value: 'NOON', label: 'Pietūs', time: '13:00' },
-    { value: 'EVENING', label: 'Vakaras', time: '19:00' },
+const slots: { value: DayPart; label: string; time: string; times: string[] }[] = [
+    { value: 'MORNING', label: 'Rytas', time: '08:00', times: ['07:00', '08:00', '09:00'] },
+    { value: 'NOON', label: 'Pietūs', time: '13:00', times: ['12:00', '13:00', '14:00'] },
+    { value: 'EVENING', label: 'Vakaras', time: '19:00', times: ['18:00', '19:00', '20:00'] },
 ]
 
 const mealLabels: Record<MealRelation, string> = {
@@ -60,8 +61,8 @@ function errorMessage(error: unknown) {
 
 function makeEditable(entry: PlanEntry): Editable {
     return {
-        dailyDose: entry.dailyDose,
         dayPart: entry.dayPart,
+        scheduledTime: entry.scheduledTime.slice(0, 5),
         mealRelation: entry.mealRelation,
         startDate: entry.startDate,
         endDate: entry.endDate,
@@ -129,7 +130,7 @@ export default function ConsumptionPlan({ data, onBack, onChange, direct = false
             )
             onChange(response.data)
             setEdits(Object.fromEntries(response.data.entries.map(item => [item.id, makeEditable(item)])))
-            setSuccess('Planas išsaugotas. Priminimų tvarkaraštis paruoštas (push siuntimas – US-12).')
+            setSuccess('Planas sėkmingai išsaugotas.')
         } catch (err) {
             setError(errorMessage(err))
         } finally {
@@ -153,7 +154,10 @@ export default function ConsumptionPlan({ data, onBack, onChange, direct = false
             <div className="plan-heading">
                 <div>
                     <h2>Papildų vartojimo planas</h2>
-                    <p>Pagal patvirtintas US-9 rekomendacijas · {data.status === 'ACTIVE' ? 'Aktyvus planas' : 'Juodraštis'}</p>
+                    <p>
+                        Papildų vartojimo tvarkaraštis ·
+                        {data.status === 'ACTIVE' ? 'Aktyvus planas' : 'Juodraštis'}
+                    </p>
                 </div>
                 <span className="plan-ai">Sudaryta DI · {data.aiModel}</span>
             </div>
@@ -167,11 +171,11 @@ export default function ConsumptionPlan({ data, onBack, onChange, direct = false
             <div className="plan-timeline">
                 {groups.map(group => (
                     <div className="plan-slot" key={group.value}>
-                        <div className="plan-slot-label"><strong>{group.label}</strong><small>{group.time}</small></div>
+                        <div className="plan-slot-label"><strong>{group.label}</strong><small>{group.times[0]}–{group.times[2]}</small></div>
                         <div className="plan-slot-items">
                             {group.entries.length === 0 && <span className="plan-muted">Nesuplanuota</span>}
                             {group.entries.map(entry => (
-                                <p key={entry.id}><strong>{entry.supplementName}</strong> · {entry.dailyDose} {entry.doseUnit} · {mealLabels[entry.mealRelation]}</p>
+                                <p key={entry.id}><strong>{entry.scheduledTime.slice(0, 5)}</strong> · <strong>{entry.supplementName}</strong> · {entry.dailyDose} {entry.doseUnit} · {mealLabels[entry.mealRelation]}</p>
                             ))}
                         </div>
                     </div>
@@ -189,14 +193,23 @@ export default function ConsumptionPlan({ data, onBack, onChange, direct = false
                                 <span>{entry.doseUnit} per parą</span>
                             </div>
                             <div className="plan-form">
-                                <label>Paros dozė ({entry.doseUnit})
-                                    <input type="number" step="0.0001" min="0.0001" max={entry.catalogMaxDailyDose ?? undefined} value={edit.dailyDose}
-                                        onChange={e => change(entry.id, { dailyDose: Number(e.target.value) })} />
-                                    <small className="plan-dose-limit">Katalogo paros riba: {entry.catalogMaxDailyDose == null ? 'nenurodyta' : `${entry.catalogMaxDailyDose} ${entry.doseUnit}`}</small>
-                                </label>
+                                <div className="plan-dose-field">
+                                    <span>Paros dozė ({entry.doseUnit})</span>
+                                    <output className="plan-dose-readonly" aria-label="Patvirtinta paros dozė">{entry.dailyDose} {entry.doseUnit}</output>
+                                </div>
                                 <label>Paros laikas
-                                    <select value={edit.dayPart} onChange={e => change(entry.id, { dayPart: e.target.value as DayPart })}>
+                                    <select value={edit.dayPart} onChange={e => {
+                                        const dayPart = e.target.value as DayPart
+                                        const standardTime = slots.find(slot => slot.value === dayPart)?.time ?? '08:00'
+                                        change(entry.id, { dayPart, scheduledTime: standardTime })
+                                    }}>
                                         {slots.map(slot => <option key={slot.value} value={slot.value}>{slot.label}</option>)}
+                                    </select>
+                                </label>
+                                <label>Vartojimo valanda (±1 val.)
+                                    <select value={edit.scheduledTime} onChange={e => change(entry.id, { scheduledTime: e.target.value })}>
+                                        {slots.find(slot => slot.value === edit.dayPart)?.times.map(time =>
+                                            <option key={time} value={time}>{time}</option>)}
                                     </select>
                                 </label>
                                 <label>Santykis su maistu
@@ -222,7 +235,7 @@ export default function ConsumptionPlan({ data, onBack, onChange, direct = false
                                     {entry.warnings.map((warning, index) => <li key={`${index}-${warning}`}>{warning}</li>)}
                                 </ul>
                             )}
-                            {entry.reminderTime && <p className="plan-reminder">Priminimo įrašas: {entry.reminderTime.slice(0, 5)} (US-12)</p>}
+                            {entry.reminderTime && <p className="plan-reminder">Priminimo įrašas: {entry.reminderTime.slice(0, 5)}</p>}
                             <button type="button" className="plan-save" disabled={busyId !== null || activating}
                                 onClick={() => void save(entry)}>
                                 {busyId === entry.id ? 'Saugoma...' : 'Išsaugoti pakeitimus'}

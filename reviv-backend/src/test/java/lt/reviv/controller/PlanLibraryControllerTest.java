@@ -31,8 +31,9 @@ class PlanLibraryControllerTest {
 
     @Test
     void updateDelegatesPlanAndEntryWithoutUsingLatestGeneration() {
-        var request = new ConsumptionPlanService.EditRequest(java.math.BigDecimal.ONE,
+        var request = new ConsumptionPlanService.EditRequest(
                 lt.reviv.bloodtests.domain.plan.PlanEntry.DayPart.MORNING,
+                java.time.LocalTime.of(8, 0),
                 lt.reviv.bloodtests.domain.plan.PlanEntry.MealRelation.AFTER_MEAL,
                 java.time.LocalDate.of(2026, 12, 1), java.time.LocalDate.of(2026, 12, 20), null);
         controller.update(7L, 3L, request, jwt);

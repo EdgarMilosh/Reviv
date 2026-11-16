@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-plan-scheduled-time
+      author: reviv
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: consumption_plan_entry
+                columnName: scheduled_time
+      changes:
+        - addColumn:
+            tableName: consumption_plan_entry
+            columns:
+              - column:
+                  name: scheduled_time
+                  type: TIME
+
+        - sql:
+            sql: |
+              UPDATE consumption_plan_entry
+              SET scheduled_time = CASE day_part
+                WHEN 'MORNING' THEN TIME '08:00:00'
+                WHEN 'NOON' THEN TIME '13:00:00'
+                WHEN 'EVENING' THEN TIME '19:00:00'
+                ELSE TIME '08:00:00'
+              END;
+
+        - addNotNullConstraint:
+            tableName: consumption_plan_entry
+            columnName: scheduled_time
+            columnDataType: TIME

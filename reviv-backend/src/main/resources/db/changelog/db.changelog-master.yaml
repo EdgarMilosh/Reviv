@@ -23,3 +23,5 @@ databaseChangeLog:
       file: db/changelog/010-push-delivery.yaml
   - include:
       file: db/changelog/011-fix-plan-entry-unique-key.yaml
+  - include:
+      file: db/changelog/012-plan-scheduled-time.yaml
