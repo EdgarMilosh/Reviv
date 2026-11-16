@@ -79,12 +79,22 @@ class PushDeliveryRepositoryIntegrationTest extends AbstractIntegrationTest {
                 Long.class, bloodTestId, GENERATION.incrementAndGet(), status));
     }
 
+    private boolean hasScheduledTime() {
+        Integer count = jdbc.queryForObject(
+                "select count(*) from information_schema.columns where table_schema = current_schema() "
+                        + "and table_name = 'consumption_plan_entry' and column_name = 'scheduled_time'",
+                Integer.class);
+        return count != null && count > 0;
+    }
+
     private Long insertEntry(Long planId, String name, String doseUnit, String meal, LocalDate start, LocalDate end) {
+        boolean withTime = hasScheduledTime();
         return relaxed(() -> jdbc.queryForObject(
                 "insert into consumption_plan_entry (plan_id, recommendation_id, supplement_id, "
-                        + "supplement_name_snapshot, daily_dose, dose_unit, day_part, meal_relation, start_date, end_date) "
-                        + "values (?, ?, (select id from supplement where name = 'Kalcis'), ?, 15.0, ?, 'MORNING', ?, ?, ?) "
-                        + "returning id",
+                        + "supplement_name_snapshot, daily_dose, dose_unit, day_part, meal_relation, start_date, end_date"
+                        + (withTime ? ", scheduled_time" : "") + ") "
+                        + "values (?, ?, (select id from supplement where name = 'Kalcis'), ?, 15.0, ?, 'MORNING', ?, ?, ?"
+                        + (withTime ? ", TIME '08:00'" : "") + ") returning id",
                 Long.class, planId, RECOMMENDATION.incrementAndGet(), name, doseUnit, meal, start, end));
     }
 
