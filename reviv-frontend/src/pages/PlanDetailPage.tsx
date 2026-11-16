@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import { api } from '../api'
 import ConsumptionPlan, { type ConsumptionPlanData } from '../components/ConsumptionPlan'
+import DoseTracker from '../components/DoseTracker'
 import './PlansPage.css'
 
 export default function PlanDetailPage() {
@@ -34,6 +35,11 @@ export default function PlanDetailPage() {
     if (error) return <div className="plans-message plans-error" role="alert"><p>{error}</p><Link to="/plans">Grįžti į planų sąrašą</Link></div>
     if (!plan) return null
 
-    return <ConsumptionPlan key={plan.id} data={plan} onChange={setPlan} onBack={() => navigate('/plans')}
-        backLabel="Grįžti į mano planus" direct />
+    return (
+        <>
+            <ConsumptionPlan key={plan.id} data={plan} onChange={setPlan} onBack={() => navigate('/plans')}
+                             backLabel="Grįžti į mano planus" direct />
+            {plan.status === 'ACTIVE' && <DoseTracker key={plan.id} planId={plan.id} />}
+        </>
+    )
 }
