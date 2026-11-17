@@ -30,19 +30,22 @@ public class BloodTestAnalysisReadService {
     private final BloodTestAnalysisRepository analysisRepository;
     private final IndicatorExplanationRepository explanationRepository;
     private final JsonMapper mapper;
+    private final DoctorReviewThresholdService doctorReviewThresholdService;
 
     public BloodTestAnalysisReadService(
             BloodTestReviewService reviewService,
             BloodTestAnalysisService analysisService,
             BloodTestAnalysisRepository analysisRepository,
             IndicatorExplanationRepository explanationRepository,
-            JsonMapper mapper
+            JsonMapper mapper,
+            DoctorReviewThresholdService doctorReviewThresholdService
     ) {
         this.reviewService = reviewService;
         this.analysisService = analysisService;
         this.analysisRepository = analysisRepository;
         this.explanationRepository = explanationRepository;
         this.mapper = mapper;
+        this.doctorReviewThresholdService = doctorReviewThresholdService;
     }
 
     @Transactional(readOnly = true)
@@ -115,6 +118,9 @@ public class BloodTestAnalysisReadService {
                             indicator.status().name(),
                             indicator.deviationPercent(),
                             indicator.criticalStatus().name(),
+                            doctorReviewThresholdService.shouldRecommendDoctorReview(
+                                    indicator.status(), indicator.deviationPercent()
+                            ),
                             explanation == null
                                     ? null
                                     : explanation.getMeaning(),

@@ -20,6 +20,7 @@ public record AnalysisResultResponse(
             String status,
             BigDecimal deviationPercent,
             String criticalStatus,
+            boolean doctorReviewRecommended,
             String meaning,
             List<String> possibleCauses,
             String practicalAdvice
