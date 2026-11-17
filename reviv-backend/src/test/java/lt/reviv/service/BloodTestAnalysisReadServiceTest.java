@@ -53,7 +53,8 @@ class BloodTestAnalysisReadServiceTest {
                 analysisService,
                 analysisRepository,
                 explanationRepository,
-                JsonMapper.builder().build()
+                JsonMapper.builder().build(),
+                new DoctorReviewThresholdService(new java.math.BigDecimal("35"))
         );
 
         jwt = Jwt.withTokenValue("test-token")
@@ -199,6 +200,28 @@ class BloodTestAnalysisReadServiceTest {
         assertTrue(indicator.possibleCauses().isEmpty());
 
         verifyNoInteractions(explanationRepository);
+    }
+
+    @Test
+    void signalsDoctorReviewOnlyWhenDeviationExceedsThirtyFivePercent() {
+        mockConfirmedTest();
+        when(analysisRepository.findByBloodTestId(TEST_ID))
+                .thenReturn(Optional.empty());
+
+        var significant = mockIndicator(21L);
+        when(significant.deviationPercent())
+                .thenReturn(new java.math.BigDecimal("35.1"));
+
+        var belowThreshold = mockIndicator(22L);
+        when(belowThreshold.deviationPercent())
+                .thenReturn(new java.math.BigDecimal("35.0"));
+
+        mockPrepared(List.of(), List.of(significant, belowThreshold), List.of());
+
+        var result = service.getAnalysis(TEST_ID, jwt);
+
+        assertTrue(result.indicators().get(0).doctorReviewRecommended());
+        assertFalse(result.indicators().get(1).doctorReviewRecommended());
     }
 
     @Test

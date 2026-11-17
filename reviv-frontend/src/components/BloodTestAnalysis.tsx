@@ -18,6 +18,7 @@ type IndicatorResult = {
     status: string
     deviationPercent: number | null
     criticalStatus: string
+    doctorReviewRecommended: boolean
     meaning: string | null
     possibleCauses: string[]
     practicalAdvice: string | null
@@ -141,7 +142,7 @@ export default function BloodTestAnalysis({
                             <div
                                 key={indicator.indicatorId}
                                 className={
-                                    indicator.criticalStatus === 'CRITICAL'
+                                    (indicator.criticalStatus === 'CRITICAL' || indicator.doctorReviewRecommended)
                                         ? 'analysis-indicator analysis-indicator-critical'
                                         : 'analysis-indicator'
                                 }
@@ -174,9 +175,10 @@ export default function BloodTestAnalysis({
                                     </p>
                                 )}
 
-                                {indicator.criticalStatus === 'NOT_ASSESSED' && (
-                                    <p>
-                                        Kritiškumas dar neįvertintas.
+                                {indicator.doctorReviewRecommended && indicator.criticalStatus !== 'CRITICAL' && (
+                                    <p role="alert">
+                                        Nustatytas ryškus nukrypimas nuo referencinio intervalo.
+                                        Rekomenduojame kreiptis į gydytoją dėl rezultatų įvertinimo.
                                     </p>
                                 )}
                             </div>
@@ -224,7 +226,7 @@ export default function BloodTestAnalysis({
                         <div
                             key={indicator.indicatorId}
                             className={
-                                indicator.criticalStatus === 'CRITICAL'
+                                (indicator.criticalStatus === 'CRITICAL' || indicator.doctorReviewRecommended)
                                     ? 'analysis-indicator analysis-indicator-critical'
                                     : 'analysis-indicator'
                             }
@@ -257,12 +259,12 @@ export default function BloodTestAnalysis({
                                             : ''}
                                     </p>
 
-                                    {indicator.criticalStatus ===
-                                        'NOT_ASSESSED' && (
-                                            <p>
-                                                Kritiškumas neįvertintas.
-                                            </p>
-                                        )}
+                                    {indicator.doctorReviewRecommended && (
+                                        <p role="alert">
+                                            Nustatytas ryškus nukrypimas nuo referencinio intervalo.
+                                            Rekomenduojame kreiptis į gydytoją dėl rezultatų įvertinimo.
+                                        </p>
+                                    )}
 
                                     {indicator.meaning && (
                                         <>
