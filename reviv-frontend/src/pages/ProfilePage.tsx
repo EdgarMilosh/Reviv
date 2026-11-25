@@ -41,6 +41,7 @@ export default function ProfilePage() {
     const { user, profile } = useAuth()
     const [form, setForm] = useState<ProfileForm>(emptyForm)
     const [allergyInput, setAllergyInput] = useState('')
+    const [noAllergies, setNoAllergies] = useState(false)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
@@ -63,6 +64,11 @@ export default function ProfilePage() {
                 }
 
                 setForm(next)
+
+                setNoAllergies(
+                    next.allergies.length === 0 &&
+                    Boolean(next.heightCm && next.weightKg)
+                )
             } catch (err) {
                 if (!active) return
                 if (axios.isAxiosError(err) && err.response?.status === 404) {
@@ -105,8 +111,12 @@ export default function ProfilePage() {
     }
 
     function addAllergy() {
+        if (noAllergies) return
+
         const value = allergyInput.trim()
+
         if (!value) return
+
         if (form.allergies.some((item) => item.toLowerCase() === value.toLowerCase())) {
             setAllergyInput('')
             return
@@ -116,7 +126,29 @@ export default function ProfilePage() {
             ...current,
             allergies: [...current.allergies, value],
         }))
+
         setAllergyInput('')
+        setError('')
+    }
+
+    function toggleNoAllergies(checked: boolean) {
+        if (checked) {
+            if (
+                form.allergies.length > 0 &&
+                !window.confirm(
+                    'Ar tikrai norite pašalinti visas įrašytas alergijas?'
+                )
+            ) return
+
+            setForm((current) => ({
+                ...current,
+                allergies: [],
+            }))
+
+            setAllergyInput('')
+        }
+
+        setNoAllergies(checked)
         setError('')
     }
 
@@ -151,7 +183,7 @@ export default function ProfilePage() {
                 heightCm,
                 weightKg,
                 harmfulHabits: form.harmfulHabits,
-                allergies: form.allergies,
+                allergies: noAllergies ? [] : form.allergies,
             })
 
             setForm((current) => ({
@@ -250,11 +282,27 @@ export default function ProfilePage() {
 
                         <div className="section-block">
                             <h2>Alergijos</h2>
+
+                            <label className="checkbox-item no-allergies-checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={noAllergies}
+                                    disabled={saving}
+                                    onChange={(event) =>
+                                        toggleNoAllergies(event.target.checked)
+                                    }
+                                />
+                                <span>Neturiu alergijų</span>
+                            </label>
+
                             <div className="allergy-input-row">
                                 <input
                                     type="text"
                                     value={allergyInput}
-                                    onChange={(event) => setAllergyInput(event.target.value)}
+                                    disabled={noAllergies || saving}
+                                    onChange={(event) =>
+                                        setAllergyInput(event.target.value)
+                                    }
                                     placeholder="Įrašykite alergiją"
                                     onKeyDown={(event) => {
                                         if (event.key === 'Enter') {
@@ -263,19 +311,34 @@ export default function ProfilePage() {
                                         }
                                     }}
                                 />
-                                <button type="button" className="btn secondary" onClick={addAllergy}>
+
+                                <button
+                                    type="button"
+                                    className="btn secondary"
+                                    disabled={noAllergies || saving}
+                                    onClick={addAllergy}
+                                >
                                     Pridėti
                                 </button>
                             </div>
 
                             <div className="allergy-list">
                                 {form.allergies.length === 0 ? (
-                                    <p className="muted empty-state">Nėra įrašytų alergijų.</p>
+                                    <p className="muted empty-state">
+                                        {noAllergies
+                                            ? 'Nurodyta, kad alergijų neturite.'
+                                            : 'Nėra įrašytų alergijų.'}
+                                    </p>
                                 ) : (
                                     form.allergies.map((allergy) => (
                                         <div key={allergy} className="allergy-tag">
                                             <span>{allergy}</span>
-                                            <button type="button" onClick={() => removeAllergy(allergy)} aria-label={`Pašalinti ${allergy}`}>
+                                            <button
+                                                type="button"
+                                                disabled={saving}
+                                                onClick={() => removeAllergy(allergy)}
+                                                aria-label={`Pašalinti ${allergy}`}
+                                            >
                                                 ×
                                             </button>
                                         </div>
@@ -284,7 +347,6 @@ export default function ProfilePage() {
                             </div>
                         </div>
                     </section>
-
                     <aside className="profile-sidebar">
                         <div className="save-card">
                             <span className="save-label">Paskutinį kartą atnaujinta</span>

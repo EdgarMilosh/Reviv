@@ -232,3 +232,14 @@
         width: 100%;
     }
 }
+
+.no-allergies-checkbox {
+    margin-bottom: 0.75rem;
+    width: fit-content;
+}
+
+.allergy-input-row input:disabled,
+.allergy-input-row button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
